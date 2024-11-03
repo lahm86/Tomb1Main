@@ -420,6 +420,7 @@ static bool M_Update(INPUT_STATE *const result, const INPUT_LAYOUT layout)
     result->option                    = M_Key(layout, INPUT_ROLE_OPTION);
     result->pause                     = M_Key(layout, INPUT_ROLE_PAUSE);
     result->toggle_photo_mode         = M_Key(layout, INPUT_ROLE_TOGGLE_PHOTO_MODE);
+    result->toggle_recording          = KEY_DOWN(SDL_SCANCODE_F12);
     result->camera_up                 = M_Key(layout, INPUT_ROLE_CAMERA_UP);
     result->camera_down               = M_Key(layout, INPUT_ROLE_CAMERA_DOWN);
     result->camera_forward            = M_Key(layout, INPUT_ROLE_CAMERA_FORWARD);

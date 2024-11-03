@@ -115,6 +115,7 @@ typedef union INPUT_STATE {
         uint64_t change_target : 1;
         uint64_t toggle_ui : 1;
         uint64_t toggle_photo_mode : 1;
+        uint64_t toggle_recording : 1;
     };
 } INPUT_STATE;
 

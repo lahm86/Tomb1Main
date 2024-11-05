@@ -49,9 +49,7 @@ typedef union INPUT_STATE {
 #endif
         uint64_t use_small_medi : 1;
         uint64_t use_big_medi : 1;
-#if TR_VERSION == 2
         uint64_t use_flare : 1;
-#endif
 
 #if TR_VERSION == 1
         uint64_t toggle_bilinear_filter : 1;

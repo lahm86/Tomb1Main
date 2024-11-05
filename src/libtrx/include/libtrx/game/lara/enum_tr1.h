@@ -175,6 +175,7 @@ typedef enum {
     LGT_MAGNUMS = 2,
     LGT_UZIS = 3,
     LGT_SHOTGUN = 4,
-    NUM_WEAPONS = 5
+    LGT_FLARE = 5,
+    NUM_WEAPONS = 6
 } LARA_GUN_TYPE;
 // clang-format on

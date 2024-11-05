@@ -12,6 +12,8 @@
 #include "global/vars.h"
 #include "math/matrix.h"
 
+#include <libtrx/log.h>
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -52,6 +54,14 @@ void Gun_Control(void)
             }
             draw = true;
             g_Lara.request_gun_type = LGT_UNARMED;
+        } else if (/*g_Config.enable_flares && */g_InputDB.use_flare) {
+            if (g_Lara.gun_type == LGT_FLARE) {
+                g_Lara.gun_status = LGS_UNDRAW;
+            } else if (true) { //{Inv_RequestItem(O_FLARES_ITEM)) {
+                g_Lara.request_gun_type = LGT_FLARE;
+                g_Lara.mesh_ptrs[LM_HAND_L] =
+            g_Meshes[g_Objects[O_LARA_FLARE].mesh_idx + LM_HAND_L];
+            }
         }
     } else if (g_Lara.gun_status == LGS_READY) {
         draw = g_Lara.water_status != LWS_ABOVE_WATER

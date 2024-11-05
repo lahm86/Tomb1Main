@@ -38,17 +38,18 @@ INVENTORY_ITEM *g_InvKeysList[23] = {
 
 int16_t g_InvMainCurrent;
 int16_t g_InvMainObjects = 1;
-int16_t g_InvMainQtys[24] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+int16_t g_InvMainQtys[25] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-INVENTORY_ITEM *g_InvMainList[23] = {
+INVENTORY_ITEM *g_InvMainList[24] = {
     &g_InvItemCompass,
     &g_InvItemPistols,
     &g_InvItemShotgun,
     &g_InvItemMagnum,
     &g_InvItemUzi,
     &g_InvItemGrenade,
+    &g_InvItemFlares,
     &g_InvItemBigMedi,
     &g_InvItemMedi,
     NULL,
@@ -117,7 +118,7 @@ INVENTORY_ITEM g_InvItemMedi = {
     .ztrans = 0,
     .which_meshes = 0xFFFFFFFF,
     .drawn_meshes = 0xFFFFFFFF,
-    .inv_pos = 7,
+    .inv_pos = 8,
     .sprlist = NULL,
 };
 
@@ -140,7 +141,7 @@ INVENTORY_ITEM g_InvItemBigMedi = {
     .ztrans = 0,
     .which_meshes = 0xFFFFFFFF,
     .drawn_meshes = 0xFFFFFFFF,
-    .inv_pos = 6,
+    .inv_pos = 7,
     .sprlist = NULL,
 };
 
@@ -624,6 +625,29 @@ INVENTORY_ITEM g_InvItemUziAmmo = {
     .which_meshes = 0xFFFFFFFF,
     .drawn_meshes = 0xFFFFFFFF,
     .inv_pos = 4,
+    .sprlist = NULL,
+};
+
+INVENTORY_ITEM g_InvItemFlares = {
+    .object_id = O_FLARES_OPTION,
+    .frames_total = 31,
+    .current_frame = 0,
+    .goal_frame = 0,
+    .open_frame = 30,
+    .anim_direction = 1,
+    .pt_xrot_sel = 0xc80,
+    .pt_xrot = 0,
+    .x_rot_sel = 0,
+    .x_rot = 0,
+    .y_rot_sel = -0x2000,
+    .y_rot = 0,
+    .ytrans_sel = 0,
+    .ytrans = 0,
+    .ztrans_sel = 0x128,
+    .ztrans = 0,
+    .which_meshes = 0xFFFFFFFF,
+    .drawn_meshes = 0xFFFFFFFF,
+    .inv_pos = 6,
     .sprlist = NULL,
 };
 

@@ -51,6 +51,7 @@ typedef enum {
     INPUT_ROLE_MENU_UP           = 46,
     INPUT_ROLE_MENU_DOWN         = 47,
     INPUT_ROLE_MENU_RIGHT        = 48,
+    INPUT_ROLE_USE_FLARE         = 49,
 #elif TR_VERSION == 2
     INPUT_ROLE_UP                          = 0,
     INPUT_ROLE_DOWN                        = 1,

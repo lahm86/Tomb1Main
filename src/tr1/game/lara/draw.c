@@ -172,6 +172,17 @@ void Lara_Draw(ITEM *item)
 
         Matrix_TranslateRel(bone[41], bone[42], bone[43]);
         Matrix_RotYXZpack(packed_rotation[LM_UARM_L]);
+        /*if (g_Lara.request_gun_type) {
+            mesh_rots =
+                &g_Lara.left_arm.frame_base
+                     [(g_Anims[g_Lara.left_arm.anim_num].interpolation >> 8)
+                          * (g_Lara.left_arm.frame_num
+                             - g_Anims[g_Lara.left_arm.anim_num].frame_base)
+                      + FBBOX_ROT];
+            Matrix_RotYXZsuperpack(&mesh_rots, 11);
+        } else {
+            Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        }*/
         Output_DrawPolygons(g_Lara.mesh_ptrs[11], clip);
 
         Matrix_TranslateRel(bone[45], bone[46], bone[47]);

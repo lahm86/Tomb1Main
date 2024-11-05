@@ -109,6 +109,15 @@ bool Inv_AddItem(const GAME_OBJECT_ID object_id)
         }
         return false;
 
+    case O_FLARES_ITEM:
+    case O_FLARES_OPTION:
+        if (Inv_RequestItem(O_FLARES_ITEM)) {
+            // ...
+        } else {
+            Inv_InsertItem(&g_InvItemFlares);
+        }
+        return false;
+
     case O_MEDI_ITEM:
     case O_MEDI_OPTION:
         Inv_InsertItem(&g_InvItemMedi);

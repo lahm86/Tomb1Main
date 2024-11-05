@@ -161,7 +161,8 @@ void Object_DrawPickupItem(ITEM *item)
         case O_KEY_OPTION_1:
         case O_KEY_OPTION_2:
         case O_KEY_OPTION_3:
-        case O_KEY_OPTION_4: {
+        case O_KEY_OPTION_4:
+        case O_FLARES_OPTION: {
             // Take the difference from the bottom of the sprite and the bottom
             // of the animation and divide it by 8.
             // 8 was chosen because in testing it positioned objects correctly.

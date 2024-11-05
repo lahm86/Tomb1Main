@@ -90,6 +90,7 @@ static void M_UpdateFromBackend(
     s->equip_uzis                |= backend->is_pressed(layout, INPUT_ROLE_EQUIP_UZIS);
     s->use_small_medi            |= backend->is_pressed(layout, INPUT_ROLE_USE_SMALL_MEDI);
     s->use_big_medi              |= backend->is_pressed(layout, INPUT_ROLE_USE_BIG_MEDI);
+    s->use_flare                 |= backend->is_pressed(layout, INPUT_ROLE_USE_FLARE);
 
     s->option                    |= backend->is_pressed(layout, INPUT_ROLE_OPTION);
     s->menu_up                   |= backend->is_pressed(layout, INPUT_ROLE_MENU_UP);

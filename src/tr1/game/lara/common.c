@@ -538,6 +538,12 @@ void Lara_UseItem(GAME_OBJECT_ID object_id)
         break;
     }
 
+    case O_FLARES_OPTION:
+        g_Lara.mesh_ptrs[LM_HAND_L] =
+            g_Meshes[g_Objects[O_LARA_FLARE].mesh_idx + LM_HAND_L];
+        //g_Lara.request_gun_type = LGT_FLARE;
+        break;
+
     default:
         break;
     }

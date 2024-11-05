@@ -43,6 +43,7 @@ extern INVENTORY_ITEM g_InvItemPistolAmmo;
 extern INVENTORY_ITEM g_InvItemShotgunAmmo;
 extern INVENTORY_ITEM g_InvItemMagnumAmmo;
 extern INVENTORY_ITEM g_InvItemUziAmmo;
+extern INVENTORY_ITEM g_InvItemFlares;
 extern INVENTORY_ITEM g_InvItemGame;
 extern INVENTORY_ITEM g_InvItemDetails;
 extern INVENTORY_ITEM g_InvItemSound;

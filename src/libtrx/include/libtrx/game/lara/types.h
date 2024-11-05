@@ -69,6 +69,13 @@ typedef struct __PACKING {
     } interact_target;
 
     struct __PACKING {
+        int16_t age;
+        int16_t frame;
+        bool control_left;
+        bool control_right;
+    } flare;
+
+    struct __PACKING {
         struct __PACKING {
             XYZ_16 head_rot;
             XYZ_16 torso_rot;

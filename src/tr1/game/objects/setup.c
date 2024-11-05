@@ -207,6 +207,7 @@ static void M_SetupMiscObjects(void)
     Pickup_Setup(&g_Objects[O_EXPLOSIVE_ITEM]);
     Pickup_Setup(&g_Objects[O_MEDI_ITEM]);
     Pickup_Setup(&g_Objects[O_BIGMEDI_ITEM]);
+    Pickup_Setup(&g_Objects[O_FLARES_ITEM]);
 
     Scion1_Setup(&g_Objects[O_SCION_ITEM_1]);
     Scion2_Setup(&g_Objects[O_SCION_ITEM_2]);

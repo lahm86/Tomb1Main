@@ -94,6 +94,7 @@ const GAME_OBJECT_ID g_PickupObjects[] = {
     O_LEADBAR_ITEM,
     O_SCION_ITEM_1,
     O_SCION_ITEM_2,
+    O_FLARES_ITEM,
     NO_OBJECT,
     // clang-format on
 };
@@ -164,8 +165,6 @@ const GAME_OBJECT_ID g_NullObjects[] = {
     O_MISSILE_1,
     O_MISSILE_2,
     O_MISSILE_3,
-    O_MISSILE_4,
-    O_MISSILE_5,
     O_EARTHQUAKE,
     O_SKYBOX,
     O_ALPHABET,
@@ -243,6 +242,7 @@ const GAME_OBJECT_PAIR g_ItemToInvObjectMap[] = {
     { O_PICKUP_ITEM_2, O_PICKUP_OPTION_2 },
     { O_SCION_ITEM_1, O_SCION_OPTION },
     { O_SCION_ITEM_2, O_SCION_OPTION },
+    { O_FLARES_ITEM, O_FLARES_OPTION },
     { NO_OBJECT, NO_OBJECT },
     // clang-format on
 };

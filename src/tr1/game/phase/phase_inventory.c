@@ -332,6 +332,7 @@ static PHASE_CONTROL Inv_Close(GAME_OBJECT_ID inv_chosen)
     case O_PUZZLE_OPTION_4:
     case O_LEADBAR_OPTION:
     case O_SCION_OPTION:
+    case O_FLARES_OPTION:
         Lara_UseItem(inv_chosen);
         break;
 

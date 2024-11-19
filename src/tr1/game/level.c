@@ -43,6 +43,7 @@ static void M_LoadFromFile(
     const char *filename, int32_t level_num, bool is_demo);
 static void M_LoadTexturePages(VFILE *file);
 static void M_LoadRooms(VFILE *file);
+static void M_ReadRoomMesh(int32_t room_num, VFILE *file);
 static void M_LoadMeshBase(VFILE *file);
 static void M_LoadMeshes(VFILE *file);
 static void M_LoadAnims(VFILE *file);
@@ -141,6 +142,80 @@ static void M_LoadTexturePages(VFILE *file)
     Benchmark_End(benchmark, NULL);
 }
 
+static void M_ReadRoomMesh(const int32_t room_num, VFILE *const file)
+{
+    const uint32_t mesh_length = VFile_ReadU32(file) * sizeof(int16_t);
+    size_t start_pos = VFile_GetPos(file);
+
+    ROOM *const room = Room_Get(room_num);
+    const INJ_MESH_META inj_data = Inject_GetRoomMeshMeta(room_num);
+
+    {
+        room->mesh.num_vertices = VFile_ReadS16(file);
+        const int32_t alloc_count =
+            room->mesh.num_vertices + inj_data.num_vertices;
+        room->mesh.vertices =
+            GameBuf_Alloc(sizeof(ROOM_VERTEX) * alloc_count, GBUF_ROOM_MESH);
+        for (int32_t i = 0; i < room->mesh.num_vertices; i++) {
+            ROOM_VERTEX *const vertex = &room->mesh.vertices[i];
+            vertex->pos.x = VFile_ReadS16(file);
+            vertex->pos.y = VFile_ReadS16(file);
+            vertex->pos.z = VFile_ReadS16(file);
+            vertex->shade = VFile_ReadU16(file);
+            vertex->flags = 0;
+        }
+    }
+
+    {
+        room->mesh.num_quads = VFile_ReadS16(file);
+        const int32_t alloc_count = room->mesh.num_quads + inj_data.num_quads;
+        room->mesh.quads =
+            GameBuf_Alloc(sizeof(FACE4) * alloc_count, GBUF_ROOM_MESH);
+        for (int32_t i = 0; i < room->mesh.num_quads; i++) {
+            FACE4 *const face = &room->mesh.quads[i];
+            for (int32_t j = 0; j < 4; j++) {
+                face->vertices[j] = VFile_ReadU16(file);
+            }
+            face->texture = VFile_ReadU16(file);
+        }
+    }
+
+    {
+        room->mesh.num_triangles = VFile_ReadS16(file);
+        const int32_t alloc_count =
+            room->mesh.num_triangles + inj_data.num_triangles;
+        room->mesh.triangles =
+            GameBuf_Alloc(sizeof(FACE4) * alloc_count, GBUF_ROOM_MESH);
+        for (int32_t i = 0; i < room->mesh.num_triangles; i++) {
+            FACE3 *const face = &room->mesh.triangles[i];
+            for (int32_t j = 0; j < 3; j++) {
+                face->vertices[j] = VFile_ReadU16(file);
+            }
+            face->texture = VFile_ReadU16(file);
+        }
+    }
+
+    {
+        room->mesh.num_sprites = VFile_ReadS16(file);
+        const int32_t alloc_count =
+            room->mesh.num_sprites + inj_data.num_sprites;
+        room->mesh.sprites =
+            GameBuf_Alloc(sizeof(ROOM_SPRITE) * alloc_count, GBUF_ROOM_MESH);
+        for (int32_t i = 0; i < room->mesh.num_sprites; i++) {
+            ROOM_SPRITE *const sprite = &room->mesh.sprites[i];
+            sprite->vertex = VFile_ReadU16(file);
+            sprite->texture = VFile_ReadU16(file);
+        }
+    }
+
+    const size_t end_pos = VFile_GetPos(file);
+    if (end_pos > start_pos + mesh_length) {
+        LOG_ERROR(
+            "Room %d mesh is too long: expected %d, read %d", room_num,
+            mesh_length, end_pos - start_pos);
+    }
+}
+
 static void M_LoadRooms(VFILE *file)
 {
     BENCHMARK *const benchmark = Benchmark_Start();
@@ -160,11 +235,7 @@ static void M_LoadRooms(VFILE *file)
         r->max_ceiling = VFile_ReadS32(file);
 
         // Room mesh
-        const uint32_t num_meshes = VFile_ReadS32(file);
-        const uint32_t inj_mesh_size = Inject_GetExtraRoomMeshSize(i);
-        r->data = GameBuf_Alloc(
-            sizeof(uint16_t) * (num_meshes + inj_mesh_size), GBUF_ROOM_MESH);
-        VFile_Read(file, r->data, sizeof(uint16_t) * num_meshes);
+        M_ReadRoomMesh(i, file);
 
         // Doors
         const uint16_t num_doors = VFile_ReadS16(file);
@@ -983,17 +1054,15 @@ static void M_MarkWaterEdgeVertices(void)
     }
 
     BENCHMARK *const benchmark = Benchmark_Start();
-    for (int32_t i = 0; i < g_RoomCount; i++) {
-        const ROOM *const room = &g_RoomInfo[i];
+    for (int32_t i = 0; i < Room_GetTotalCount(); i++) {
+        const ROOM *const room = Room_Get(i);
         const int32_t y_test =
             (room->flags & RF_UNDERWATER) ? room->max_ceiling : room->min_floor;
-        int16_t *data = room->data;
-        const int16_t num_vertices = *data++;
-        for (int32_t j = 0; j < num_vertices; j++) {
-            if (data[1] == y_test) {
-                data[3] |= NO_VERT_MOVE;
+        for (int32_t j = 0; j < room->mesh.num_vertices; j++) {
+            ROOM_VERTEX *const vertex = &room->mesh.vertices[j];
+            if (vertex->pos.y == y_test) {
+                vertex->flags |= NO_VERT_MOVE;
             }
-            data += 4;
         }
     }
 
@@ -1026,8 +1095,9 @@ static size_t M_CalculateMaxVertices(void)
             MAX(max_vertices, *(g_Meshes[static_info->mesh_num] + 5));
     }
 
-    for (int32_t i = 0; i < g_RoomCount; i++) {
-        max_vertices = MAX(max_vertices, *g_RoomInfo[i].data);
+    for (int32_t i = 0; i < Room_GetTotalCount(); i++) {
+        const ROOM *room = Room_Get(i);
+        max_vertices = MAX(max_vertices, room->mesh.num_vertices);
     }
 
     Benchmark_End(benchmark, NULL);

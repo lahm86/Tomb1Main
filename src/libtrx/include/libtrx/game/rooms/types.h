@@ -71,6 +71,33 @@ typedef struct __PACKING {
 } LIGHT;
 
 typedef struct __PACKING {
+    XYZ_16 pos;
+    uint16_t flags;
+#if TR_VERSION == 1
+    uint16_t shade;
+#elif TR_VERSION == 2
+    int16_t shade_1;
+    int16_t shade_2;
+#endif
+} ROOM_VERTEX;
+
+typedef struct __PACKING {
+    uint16_t texture;
+    uint16_t vertex;
+} ROOM_SPRITE;
+
+typedef struct __PACKING {
+    int16_t num_vertices;
+    int16_t num_quads;
+    int16_t num_triangles;
+    int16_t num_sprites;
+    ROOM_VERTEX *vertices;
+    FACE4 *quads;
+    FACE3 *triangles;
+    ROOM_SPRITE *sprites;
+} ROOM_MESH;
+
+typedef struct __PACKING {
     XYZ_32 pos;
     struct __PACKING {
         int16_t y;
@@ -85,7 +112,11 @@ typedef struct __PACKING {
 } MESH;
 
 typedef struct __PACKING {
+#if TR_VERSION == 1
+    ROOM_MESH mesh;
+#elif TR_VERSION == 2
     int16_t *data;
+#endif
     PORTALS *portals;
     SECTOR *sectors;
     LIGHT *lights;

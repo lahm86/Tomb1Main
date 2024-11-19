@@ -2,15 +2,7 @@
 
 #include "global/types.h"
 
-#include <stdint.h>
-
-typedef struct {
-    int16_t room_index;
-    int16_t num_vertices;
-    int16_t num_quads;
-    int16_t num_triangles;
-    int16_t num_sprites;
-} INJ_MESH_META;
+#include <libtrx/game/inject.h>
 
 typedef struct {
     int32_t texture_page_count;
@@ -46,4 +38,3 @@ void Inject_Init(
     int injection_count, char *filenames[], INJECTION_INFO *aggregate);
 void Inject_AllInjections(LEVEL_INFO *level_info);
 void Inject_Cleanup(void);
-INJ_MESH_META Inject_GetRoomMeshMeta(int32_t room_index);

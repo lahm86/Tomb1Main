@@ -9,11 +9,13 @@
 #endif
 
 typedef struct __PACKING {
+    uint16_t flags;
     uint16_t texture;
     uint16_t vertices[4];
 } FACE4;
 
 typedef struct __PACKING {
+    uint16_t flags;
     uint16_t texture;
     uint16_t vertices[3];
 } FACE3;

@@ -44,7 +44,6 @@ static void M_LoadFromFile(
     const char *filename, int32_t level_num, bool is_demo);
 static void M_LoadTexturePages(VFILE *file);
 static void M_LoadRooms(VFILE *file);
-static void M_LoadMeshBase(VFILE *file);
 static void M_LoadMeshes(VFILE *file);
 static void M_LoadAnims(VFILE *file);
 static void M_LoadAnimChanges(VFILE *file);
@@ -93,7 +92,6 @@ static void M_LoadFromFile(
     LOG_INFO("file level num: %d", file_level_num);
 
     M_LoadRooms(file);
-    M_LoadMeshBase(file);
     M_LoadMeshes(file);
     M_LoadAnims(file);
     M_LoadAnimChanges(file);
@@ -262,35 +260,25 @@ static void M_LoadRooms(VFILE *file)
     Benchmark_End(benchmark, NULL);
 }
 
-static void M_LoadMeshBase(VFILE *const file)
-{
-    BENCHMARK *const benchmark = Benchmark_Start();
-    m_LevelInfo.mesh_count = VFile_ReadS32(file);
-    LOG_INFO("%d meshes", m_LevelInfo.mesh_count);
-    g_MeshBase = GameBuf_Alloc(
-        sizeof(int16_t)
-            * (m_LevelInfo.mesh_count + m_InjectionInfo->mesh_count),
-        GBUF_MESHES);
-    VFile_Read(file, g_MeshBase, sizeof(int16_t) * m_LevelInfo.mesh_count);
-    Benchmark_End(benchmark, NULL);
-}
-
 static void M_LoadMeshes(VFILE *const file)
 {
     BENCHMARK *const benchmark = Benchmark_Start();
+
+    m_LevelInfo.mesh_count = VFile_ReadS32(file);
+    LOG_INFO("%d mesh data", m_LevelInfo.mesh_count);
+    int16_t mesh_data[m_LevelInfo.mesh_count];
+    VFile_Read(file, mesh_data, sizeof(int16_t) * m_LevelInfo.mesh_count);
+
     m_LevelInfo.mesh_ptr_count = VFile_ReadS32(file);
-    int32_t *mesh_indices = GameBuf_Alloc(
-        sizeof(int32_t) * m_LevelInfo.mesh_ptr_count, GBUF_MESH_POINTERS);
+    LOG_INFO("%d mesh indices", m_LevelInfo.mesh_ptr_count);
+    int32_t mesh_indices[m_LevelInfo.mesh_ptr_count];
     VFile_Read(
         file, mesh_indices, sizeof(int32_t) * m_LevelInfo.mesh_ptr_count);
 
-    g_Meshes = GameBuf_Alloc(
-        sizeof(int16_t *)
-            * (m_LevelInfo.mesh_ptr_count + m_InjectionInfo->mesh_ptr_count),
-        GBUF_MESH_POINTERS);
-    for (int i = 0; i < m_LevelInfo.mesh_ptr_count; i++) {
-        g_Meshes[i] = &g_MeshBase[mesh_indices[i] / 2];
-    }
+    Object_InitialiseMeshes(
+        m_LevelInfo.mesh_ptr_count + m_InjectionInfo->mesh_ptr_count);
+    Level_ReadObjectMeshes(m_LevelInfo.mesh_ptr_count, mesh_data, mesh_indices);
+
     Benchmark_End(benchmark, NULL);
 }
 
@@ -917,7 +905,7 @@ static void M_CompleteSetup(int32_t level_num)
     // Must be called post-injection to allow for floor data changes.
     Stats_ObserveRoomsLoad();
 
-    // Must be called after all g_Anims, g_Meshes etc initialised.
+    // Must be called after all anims, meshes etc initialised.
     Object_SetupAllObjects();
 
     // Must be called after Setup_AllObjects using the cached item
@@ -1000,14 +988,15 @@ static size_t M_CalculateMaxVertices(void)
     BENCHMARK *const benchmark = Benchmark_Start();
     size_t max_vertices = 0;
     for (int32_t i = 0; i < O_NUMBER_OF; i++) {
-        const OBJECT *object_info = &g_Objects[i];
-        if (!object_info->loaded) {
+        const OBJECT *object = &g_Objects[i];
+        if (!object->loaded || object->nmeshes <= 0) {
             continue;
         }
 
-        for (int32_t j = 0; j < object_info->nmeshes; j++) {
-            max_vertices =
-                MAX(max_vertices, *(g_Meshes[object_info->mesh_idx + j] + 5));
+        for (int32_t j = 0; j < object->nmeshes; j++) {
+            const OBJECT_MESH *const mesh =
+                Object_GetMesh(object->mesh_idx + j);
+            max_vertices = MAX(max_vertices, mesh->num_vertices);
         }
     }
 
@@ -1017,8 +1006,8 @@ static size_t M_CalculateMaxVertices(void)
             continue;
         }
 
-        max_vertices =
-            MAX(max_vertices, *(g_Meshes[static_info->mesh_num] + 5));
+        const OBJECT_MESH *const mesh = Object_GetMesh(static_info->mesh_num);
+        max_vertices = MAX(max_vertices, mesh->num_vertices);
     }
 
     for (int32_t i = 0; i < Room_GetTotalCount(); i++) {

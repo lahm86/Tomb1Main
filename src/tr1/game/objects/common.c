@@ -197,7 +197,7 @@ void Object_DrawPickupItem(ITEM *item)
         // of the code in DrawAnimatingItem starting with the line that
         // matches the following line.
         int32_t bit = 1;
-        int16_t **meshpp = &g_Meshes[object->mesh_idx];
+        const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx);
         int32_t *bone = &g_AnimBones[object->bone_idx];
 
         Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
@@ -206,7 +206,7 @@ void Object_DrawPickupItem(ITEM *item)
         Matrix_RotYXZpack(*packed_rotation++);
 
         if (item->mesh_bits & bit) {
-            Output_DrawPolygons(*meshpp++, clip);
+            Output_DrawObjectMesh(mesh, clip);
         }
 
         for (int i = 1; i < object->nmeshes; i++) {
@@ -226,11 +226,11 @@ void Object_DrawPickupItem(ITEM *item)
 
             bit <<= 1;
             if (item->mesh_bits & bit) {
-                Output_DrawPolygons(*meshpp, clip);
+                mesh = Object_GetMesh(object->mesh_idx + i);
+                Output_DrawObjectMesh(mesh, clip);
             }
 
             bone += 4;
-            meshpp++;
         }
     }
 
@@ -250,7 +250,7 @@ void Object_DrawInterpolatedObject(
 
     Matrix_Push();
     int32_t mesh_num = 1;
-    int16_t **meshpp = &g_Meshes[object->mesh_idx];
+    const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx);
     int32_t *bone = &g_AnimBones[object->bone_idx];
 
     assert(rate);
@@ -262,7 +262,7 @@ void Object_DrawInterpolatedObject(
         Matrix_RotYXZpack(*packed_rotation++);
 
         if (meshes & mesh_num) {
-            Output_DrawPolygons(*meshpp++, clip);
+            Output_DrawObjectMesh(mesh, clip);
         }
 
         for (int i = 1; i < object->nmeshes; i++) {
@@ -290,11 +290,11 @@ void Object_DrawInterpolatedObject(
 
             mesh_num <<= 1;
             if (meshes & mesh_num) {
-                Output_DrawPolygons(*meshpp, clip);
+                mesh = Object_GetMesh(object->mesh_idx + i);
+                Output_DrawObjectMesh(mesh, clip);
             }
 
             bone += 4;
-            meshpp++;
         }
     } else {
         assert(frame2);
@@ -307,7 +307,7 @@ void Object_DrawInterpolatedObject(
         Matrix_RotYXZpack_I(*packed_rotation1++, *packed_rotation2++);
 
         if (meshes & mesh_num) {
-            Output_DrawPolygons_I(*meshpp++, clip);
+            Output_DrawInterpolatedObjectMesh(mesh, clip);
         }
 
         for (int i = 1; i < object->nmeshes; i++) {
@@ -335,11 +335,11 @@ void Object_DrawInterpolatedObject(
 
             mesh_num <<= 1;
             if (meshes & mesh_num) {
-                Output_DrawPolygons_I(*meshpp, clip);
+                mesh = Object_GetMesh(object->mesh_idx + i);
+                Output_DrawInterpolatedObjectMesh(mesh, clip);
             }
 
             bone += 4;
-            meshpp++;
         }
     }
 
@@ -397,54 +397,28 @@ void Object_DrawUnclippedItem(ITEM *item)
 void Object_SetMeshReflective(
     const GAME_OBJECT_ID object_id, const int32_t mesh_idx, const bool enabled)
 {
-    const OBJECT *const object = &g_Objects[object_id];
+    const OBJECT *const object = Object_GetObject(object_id);
     if (!object->loaded) {
         return;
     }
-    int16_t *obj_ptr = g_Meshes[object->mesh_idx + mesh_idx];
 
-    TOGGLE_REFLECTION_ENABLED(obj_ptr[3], enabled);
+    OBJECT_MESH *const mesh = Object_GetMesh(object->mesh_idx + mesh_idx);
+    TOGGLE_REFLECTION_ENABLED(mesh->flags, enabled);
 
-    obj_ptr += 5;
-    int32_t vertex_count = *obj_ptr++;
-    obj_ptr += vertex_count * 3;
-    vertex_count = *obj_ptr++;
-    if (vertex_count > 0) {
-        obj_ptr += vertex_count * 3;
-    } else {
-        obj_ptr += vertex_count;
+    for (int32_t i = 0; i < mesh->num_tex_quads; i++) {
+        TOGGLE_REFLECTION_ENABLED((&mesh->tex_quads[i])->flags, enabled);
     }
 
-    // textured quads
-    int32_t num = *obj_ptr++;
-    for (int32_t i = 0; i < num; i++) {
-        // skip vertices
-        obj_ptr += 4;
-        TOGGLE_REFLECTION_ENABLED(*obj_ptr++, enabled);
+    for (int32_t i = 0; i < mesh->num_tex_triangles; i++) {
+        TOGGLE_REFLECTION_ENABLED((&mesh->tex_triangles[i])->flags, enabled);
     }
 
-    // textured triangles
-    num = *obj_ptr++;
-    for (int32_t i = 0; i < num; i++) {
-        // skip vertices
-        obj_ptr += 3;
-        TOGGLE_REFLECTION_ENABLED(*obj_ptr++, enabled);
+    for (int32_t i = 0; i < mesh->num_flat_quads; i++) {
+        TOGGLE_REFLECTION_ENABLED((&mesh->flat_quads[i])->flags, enabled);
     }
 
-    // color quads
-    num = *obj_ptr++;
-    for (int32_t i = 0; i < num; i++) {
-        // skip vertices
-        obj_ptr += 4;
-        TOGGLE_REFLECTION_ENABLED(*obj_ptr++, enabled);
-    }
-
-    // color triangles
-    num = *obj_ptr++;
-    for (int32_t i = 0; i < num; i++) {
-        // skip vertices
-        obj_ptr += 3;
-        TOGGLE_REFLECTION_ENABLED(*obj_ptr++, enabled);
+    for (int32_t i = 0; i < mesh->num_flat_triangles; i++) {
+        TOGGLE_REFLECTION_ENABLED((&mesh->flat_triangles[i])->flags, enabled);
     }
 }
 

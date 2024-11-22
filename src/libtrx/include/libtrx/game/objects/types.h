@@ -1,5 +1,9 @@
 #pragma once
 
+#include "../anims.h"
+#include "../collision.h"
+#include "../items.h"
+#include "../math.h"
 #include "../types.h"
 
 #include <stdint.h>
@@ -11,6 +15,27 @@ typedef struct __PACKING {
         XYZ_16 max;
     } shift, rot;
 } OBJECT_BOUNDS;
+
+typedef struct __PACKING {
+    uint16_t flags;
+    XYZ_16 center;
+    int16_t radius;
+    int16_t num_lights;
+    int16_t num_vertices;
+    int16_t num_tex_quads;
+    int16_t num_tex_triangles;
+    int16_t num_flat_quads;
+    int16_t num_flat_triangles;
+    union {
+        XYZ_16 *normals;
+        int16_t *lights;
+    } lighting;
+    XYZ_16 *vertices;
+    FACE4 *tex_quads;
+    FACE3 *tex_triangles;
+    FACE4 *flat_quads;
+    FACE3 *flat_triangles;
+} OBJECT_MESH;
 
 typedef struct __PACKING {
     int16_t nmeshes;

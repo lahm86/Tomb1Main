@@ -10,6 +10,7 @@
 #include "items.h"
 
 #include <libtrx/benchmark.h>
+#include <libtrx/game/level.h>
 #include <libtrx/log.h>
 #include <libtrx/memory.h>
 #include <libtrx/utils.h>
@@ -118,25 +119,28 @@ static void M_LoadFromFile(INJECTION *injection, const char *filename);
 
 static uint16_t M_RemapRGB(LEVEL_INFO *level_info, RGB_888 rgb);
 static void M_AlignTextureReferences(
-    OBJECT *object, uint16_t *palette_map, int32_t page_base);
+    const OBJECT *object, const uint16_t *palette_map, int32_t tex_info_base);
 
 static void M_LoadTexturePages(
     INJECTION *injection, LEVEL_INFO *level_info, uint16_t *palette_map,
     RGBA_8888 *page_ptr);
 static void M_TextureData(
     INJECTION *injection, LEVEL_INFO *level_info, int32_t page_base);
-static void M_MeshData(INJECTION *injection, LEVEL_INFO *level_info);
+static void M_MeshData(const INJECTION *injection);
 static void M_AnimData(INJECTION *injection, LEVEL_INFO *level_info);
 static void M_AnimRangeEdits(INJECTION *injection);
 static void M_ObjectData(
     INJECTION *injection, LEVEL_INFO *level_info, uint16_t *palette_map);
 static void M_SFXData(INJECTION *injection, LEVEL_INFO *level_info);
 
-static int16_t *M_GetMeshTexture(FACE_EDIT *face_edit);
+static uint16_t *M_GetMeshTexture(const FACE_EDIT *face_edit);
 
-static void M_ApplyFaceEdit(
-    FACE_EDIT *face_edit, int16_t *data_ptr, int16_t texture);
-static void M_ApplyMeshEdit(MESH_EDIT *mesh_edit, uint16_t *palette_map);
+static void M_ApplyFace4Edit(
+    const FACE_EDIT *edit, FACE4 *faces, uint16_t texture);
+static void M_ApplyFace3Edit(
+    const FACE_EDIT *edit, FACE3 *faces, uint16_t texture);
+static void M_ApplyMeshEdit(
+    const MESH_EDIT *mesh_edit, const uint16_t *palette_map);
 static void M_MeshEdits(INJECTION *injection, uint16_t *palette_map);
 static void M_TextureOverwrites(
     INJECTION *injection, LEVEL_INFO *level_info, uint16_t *palette_map);
@@ -478,26 +482,26 @@ static void M_TextureData(
     Benchmark_End(benchmark, NULL);
 }
 
-static void M_MeshData(INJECTION *injection, LEVEL_INFO *level_info)
+static void M_MeshData(const INJECTION *const injection)
 {
+    if (injection->info->mesh_count == 0) {
+        return;
+    }
+
     BENCHMARK *const benchmark = Benchmark_Start();
 
     INJECTION_INFO *inj_info = injection->info;
     VFILE *const fp = injection->fp;
 
-    int32_t mesh_base = level_info->mesh_count;
-    VFile_Read(
-        fp, g_MeshBase + mesh_base, sizeof(int16_t) * inj_info->mesh_count);
-    level_info->mesh_count += inj_info->mesh_count;
+    const int32_t data_size = sizeof(int16_t) * inj_info->mesh_count;
+    int16_t mesh_data[data_size];
+    VFile_Read(fp, mesh_data, data_size);
 
-    uint32_t *mesh_indices = GameBuf_Alloc(
-        sizeof(uint32_t) * inj_info->mesh_ptr_count, GBUF_MESH_POINTERS);
-    VFile_Read(fp, mesh_indices, sizeof(uint32_t) * inj_info->mesh_ptr_count);
+    const int32_t index_size = sizeof(int32_t) * inj_info->mesh_ptr_count;
+    int32_t mesh_indices[index_size];
+    VFile_Read(fp, mesh_indices, index_size);
 
-    for (int32_t i = 0; i < inj_info->mesh_ptr_count; i++) {
-        g_Meshes[level_info->mesh_ptr_count + i] =
-            &g_MeshBase[mesh_base + mesh_indices[i] / 2];
-    }
+    Level_ReadObjectMeshes(inj_info->mesh_ptr_count, mesh_data, mesh_indices);
 
     Benchmark_End(benchmark, NULL);
 }
@@ -765,45 +769,30 @@ static void M_SFXData(INJECTION *injection, LEVEL_INFO *level_info)
 }
 
 static void M_AlignTextureReferences(
-    OBJECT *object, uint16_t *palette_map, int32_t page_base)
+    const OBJECT *const object, const uint16_t *const palette_map,
+    const int32_t tex_info_base)
 {
-    int16_t **mesh = &g_Meshes[object->mesh_idx];
     for (int32_t i = 0; i < object->nmeshes; i++) {
-        int16_t *data_ptr = *mesh++;
-        data_ptr += 5; // Skip centre and collision radius
-        int32_t vertex_count = *data_ptr++;
-        data_ptr += 3 * vertex_count; // Skip vertex info
-
-        // Skip normals or lights
-        int32_t normal_count = *data_ptr++;
-        data_ptr += normal_count > 0 ? 3 * normal_count : -normal_count;
+        OBJECT_MESH *const mesh = Object_GetMesh(object->mesh_idx + i);
 
         // Align the tex_info references on the textured quads and triangles.
-        int32_t num_faces = *data_ptr++;
-        for (int32_t j = 0; j < num_faces; j++) {
-            data_ptr += 4; // Skip vertices
-            *data_ptr++ += page_base;
+        for (int32_t j = 0; j < mesh->num_tex_quads; j++) {
+            (&mesh->tex_quads[j])->texture += tex_info_base;
         }
 
-        num_faces = *data_ptr++;
-        for (int32_t j = 0; j < num_faces; j++) {
-            data_ptr += 3;
-            *data_ptr++ += page_base;
+        for (int32_t j = 0; j < mesh->num_tex_triangles; j++) {
+            (&mesh->tex_triangles[j])->texture += tex_info_base;
         }
 
         // Align coloured quads and triangles to the level palette.
-        num_faces = *data_ptr++;
-        for (int32_t j = 0; j < num_faces; j++) {
-            data_ptr += 4;
-            *data_ptr = palette_map[*data_ptr];
-            data_ptr++;
+        for (int32_t j = 0; j < mesh->num_flat_quads; j++) {
+            FACE4 *const face = &mesh->flat_quads[j];
+            face->texture = palette_map[face->texture];
         }
 
-        num_faces = *data_ptr++;
-        for (int32_t j = 0; j < num_faces; j++) {
-            data_ptr += 3;
-            *data_ptr = palette_map[*data_ptr];
-            data_ptr++;
+        for (int32_t j = 0; j < mesh->num_flat_triangles; j++) {
+            FACE3 *const face = &mesh->flat_triangles[j];
+            face->texture = palette_map[face->texture];
         }
     }
 }
@@ -896,152 +885,109 @@ static void M_MeshEdits(INJECTION *injection, uint16_t *palette_map)
     Benchmark_End(benchmark, NULL);
 }
 
-static void M_ApplyMeshEdit(MESH_EDIT *mesh_edit, uint16_t *palette_map)
+static void M_ApplyMeshEdit(
+    const MESH_EDIT *const mesh_edit, const uint16_t *const palette_map)
 {
-    OBJECT object = g_Objects[mesh_edit->object_id];
-    if (!object.loaded) {
+    const OBJECT *const object = Object_GetObject(mesh_edit->object_id);
+    if (!object->loaded) {
         return;
     }
 
-    int16_t **mesh = &g_Meshes[object.mesh_idx];
-    int16_t *data_ptr = *(mesh + mesh_edit->mesh_idx);
+    OBJECT_MESH *const mesh =
+        Object_GetMesh(object->mesh_idx + mesh_edit->mesh_idx);
 
-    *data_ptr++ += mesh_edit->centre_shift.x;
-    *data_ptr++ += mesh_edit->centre_shift.y;
-    *data_ptr++ += mesh_edit->centre_shift.z;
+    mesh->center.x += mesh_edit->centre_shift.x;
+    mesh->center.y += mesh_edit->centre_shift.y;
+    mesh->center.z += mesh_edit->centre_shift.z;
+    mesh->radius += mesh_edit->radius_shift;
 
-    int32_t *radius = (int32_t *)data_ptr;
-    *radius += mesh_edit->radius_shift;
-    data_ptr += 2;
-
-    int32_t vertex_count = *data_ptr++;
     for (int32_t i = 0; i < mesh_edit->vertex_edit_count; i++) {
-        VERTEX_EDIT *vertex_edit = mesh_edit->vertex_edits + i;
-        int16_t *vertex_ptr = (data_ptr + 3 * vertex_edit->vertex_index);
-        *vertex_ptr++ += vertex_edit->x_change;
-        *vertex_ptr++ += vertex_edit->y_change;
-        *vertex_ptr++ += vertex_edit->z_change;
+        const VERTEX_EDIT *const edit = &mesh_edit->vertex_edits[i];
+        XYZ_16 *const vertex = &mesh->vertices[edit->vertex_index];
+        vertex->x += edit->x_change;
+        vertex->y += edit->y_change;
+        vertex->z += edit->z_change;
     }
-
-    if (!mesh_edit->face_edit_count) {
-        return;
-    }
-
-    // Skip vertices and lights/normals.
-    data_ptr += 3 * vertex_count;
-    int32_t normal_count = *data_ptr++;
-    data_ptr += normal_count > 0 ? 3 * normal_count : -normal_count;
 
     // Find each face we are interested in and replace its texture
     // or palette reference with the one selected from each edit's
     // instructions.
-    int16_t *data_start = data_ptr;
     for (int32_t i = 0; i < mesh_edit->face_edit_count; i++) {
-        FACE_EDIT *face_edit = &mesh_edit->face_edits[i];
-        int16_t texture;
+        const FACE_EDIT *const face_edit = &mesh_edit->face_edits[i];
+        uint16_t texture;
         if (face_edit->source_identifier < 0) {
             texture = palette_map[-face_edit->source_identifier];
         } else {
-            int16_t *tex_ptr = M_GetMeshTexture(face_edit);
-            if (!tex_ptr) {
+            const uint16_t *const tex_ptr = M_GetMeshTexture(face_edit);
+            if (tex_ptr == NULL) {
                 continue;
             }
             texture = *tex_ptr;
         }
 
-        data_ptr = data_start;
-
-        int32_t num_faces = *data_ptr++;
-        if (face_edit->face_type == FT_TEXTURED_QUAD) {
-            M_ApplyFaceEdit(face_edit, data_ptr, texture);
-        }
-
-        data_ptr += 5 * num_faces;
-        num_faces = *data_ptr++;
-        if (face_edit->face_type == FT_TEXTURED_TRIANGLE) {
-            M_ApplyFaceEdit(face_edit, data_ptr, texture);
-        }
-
-        data_ptr += 4 * num_faces;
-        num_faces = *data_ptr++;
-        if (face_edit->face_type == FT_COLOURED_QUAD) {
-            M_ApplyFaceEdit(face_edit, data_ptr, texture);
-        }
-
-        data_ptr += 5 * num_faces;
-        num_faces = *data_ptr++;
-        if (face_edit->face_type == FT_COLOURED_TRIANGLE) {
-            M_ApplyFaceEdit(face_edit, data_ptr, texture);
+        switch (face_edit->face_type) {
+        case FT_TEXTURED_QUAD:
+            M_ApplyFace4Edit(face_edit, mesh->tex_quads, texture);
+            break;
+        case FT_TEXTURED_TRIANGLE:
+            M_ApplyFace3Edit(face_edit, mesh->tex_triangles, texture);
+            break;
+        case FT_COLOURED_QUAD:
+            M_ApplyFace4Edit(face_edit, mesh->flat_quads, texture);
+            break;
+        case FT_COLOURED_TRIANGLE:
+            M_ApplyFace3Edit(face_edit, mesh->flat_triangles, texture);
+            break;
         }
     }
 }
 
-static void M_ApplyFaceEdit(
-    FACE_EDIT *face_edit, int16_t *data_ptr, int16_t texture)
+static void M_ApplyFace4Edit(
+    const FACE_EDIT *const edit, FACE4 *const faces, const uint16_t texture)
 {
-    int32_t vertex_count;
-    switch (face_edit->face_type) {
-    case FT_TEXTURED_TRIANGLE:
-    case FT_COLOURED_TRIANGLE:
-        vertex_count = 3;
-        break;
-    default:
-        vertex_count = 4;
-        break;
-    }
-
-    int16_t *face_ptr;
-    for (int32_t i = 0; i < face_edit->target_count; i++) {
-        // Skip over the faces before this, plus this face's vertices.
-        face_ptr =
-            (data_ptr + (vertex_count + 1) * face_edit->targets[i]
-             + vertex_count);
-        *face_ptr = texture;
+    for (int32_t i = 0; i < edit->target_count; i++) {
+        FACE4 *const face = &faces[edit->targets[i]];
+        face->texture = texture;
     }
 }
 
-static int16_t *M_GetMeshTexture(FACE_EDIT *face_edit)
+static void M_ApplyFace3Edit(
+    const FACE_EDIT *const edit, FACE3 *const faces, const uint16_t texture)
 {
-    OBJECT object = g_Objects[face_edit->object_id];
-    if (!object.loaded) {
+    for (int32_t i = 0; i < edit->target_count; i++) {
+        FACE3 *const face = &faces[edit->targets[i]];
+        face->texture = texture;
+    }
+}
+
+static uint16_t *M_GetMeshTexture(const FACE_EDIT *face_edit)
+{
+    const OBJECT *const object = Object_GetObject(face_edit->object_id);
+    if (!object->loaded) {
         return NULL;
     }
 
-    int16_t **mesh = &g_Meshes[object.mesh_idx];
-    int16_t *data_ptr = *(mesh + face_edit->source_identifier);
-    data_ptr += 5; // Skip centre and collision radius
+    const OBJECT_MESH *const mesh =
+        Object_GetMesh(object->mesh_idx + face_edit->source_identifier);
 
-    // Skip vertices and lights/normals.
-    int32_t vertex_count = *data_ptr++;
-    data_ptr += 3 * vertex_count;
-    int32_t normal_count = *data_ptr++;
-    data_ptr += normal_count > 0 ? 3 * normal_count : -normal_count;
-
-    int32_t num_faces = *data_ptr++;
     if (face_edit->face_type == FT_TEXTURED_QUAD) {
-        data_ptr += face_edit->face_index * 5 + 4;
-        return data_ptr;
+        FACE4 *const face = &mesh->tex_quads[face_edit->face_index];
+        return &face->texture;
     }
 
-    data_ptr += 5 * num_faces;
-    num_faces = *data_ptr++;
     if (face_edit->face_type == FT_TEXTURED_TRIANGLE) {
-        data_ptr += face_edit->face_index * 4 + 3;
-        return data_ptr;
+        FACE3 *const face = &mesh->tex_triangles[face_edit->face_index];
+        return &face->texture;
     }
 
-    data_ptr += 4 * num_faces;
-    num_faces = *data_ptr++;
     if (face_edit->face_type == FT_COLOURED_QUAD) {
-        data_ptr += face_edit->face_index * 5 + 4;
-        return data_ptr;
+        FACE4 *const face = &mesh->flat_quads[face_edit->face_index];
+        return &face->texture;
     }
 
-    data_ptr += 5 * num_faces;
-    num_faces = *data_ptr++;
     if (face_edit->face_type == FT_COLOURED_TRIANGLE) {
-        data_ptr += face_edit->face_index * 4 + 3;
-        return data_ptr;
+        FACE3 *const face = &mesh->flat_triangles[face_edit->face_index];
+        return &face->texture;
     }
 
     return NULL;
@@ -1738,7 +1684,7 @@ void Inject_AllInjections(LEVEL_INFO *level_info)
             source_pages + (source_page_count * PAGE_SIZE));
 
         M_TextureData(injection, level_info, tpage_base);
-        M_MeshData(injection, level_info);
+        M_MeshData(injection);
         M_AnimData(injection, level_info);
         M_ObjectData(injection, level_info, palette_map);
         M_SFXData(injection, level_info);

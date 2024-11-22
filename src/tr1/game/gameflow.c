@@ -1230,19 +1230,9 @@ GameFlow_InterpretSequence(int32_t level_num, GAMEFLOW_LEVEL_TYPE level_type)
 
         case GFS_MESH_SWAP: {
             GAMEFLOW_MESH_SWAP_DATA *swap_data = seq->data;
-            int16_t *temp;
-
-            temp = g_Meshes
-                [g_Objects[swap_data->object1_id].mesh_idx
-                 + swap_data->mesh_num];
-            g_Meshes
-                [g_Objects[swap_data->object1_id].mesh_idx
-                 + swap_data->mesh_num] = g_Meshes
-                    [g_Objects[swap_data->object2_id].mesh_idx
-                     + swap_data->mesh_num];
-            g_Meshes
-                [g_Objects[swap_data->object2_id].mesh_idx
-                 + swap_data->mesh_num] = temp;
+            Object_SwapMesh(
+                swap_data->object1_id, swap_data->object2_id,
+                swap_data->mesh_num);
             break;
         }
 
@@ -1361,17 +1351,9 @@ GameFlow_StorySoFar(int32_t level_num, int32_t savegame_level)
 
         case GFS_MESH_SWAP: {
             GAMEFLOW_MESH_SWAP_DATA *swap_data = seq->data;
-            int16_t *temp = g_Meshes
-                [g_Objects[swap_data->object1_id].mesh_idx
-                 + swap_data->mesh_num];
-            g_Meshes
-                [g_Objects[swap_data->object1_id].mesh_idx
-                 + swap_data->mesh_num] = g_Meshes
-                    [g_Objects[swap_data->object2_id].mesh_idx
-                     + swap_data->mesh_num];
-            g_Meshes
-                [g_Objects[swap_data->object2_id].mesh_idx
-                 + swap_data->mesh_num] = temp;
+            Object_SwapMesh(
+                swap_data->object1_id, swap_data->object2_id,
+                swap_data->mesh_num);
             break;
         }
 

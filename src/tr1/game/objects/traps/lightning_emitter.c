@@ -187,8 +187,8 @@ void LightningEmitter_Draw(ITEM *item)
     int32_t y1 = g_MatrixPtr->_13;
     int32_t z1 = g_MatrixPtr->_23;
 
-    Output_DrawPolygons(
-        g_Meshes[g_Objects[O_LIGHTNING_EMITTER].mesh_idx], clip);
+    Output_DrawObjectMesh(
+        Object_GetMesh(g_Objects[O_LIGHTNING_EMITTER].mesh_idx), clip);
 
     Matrix_Pop();
 

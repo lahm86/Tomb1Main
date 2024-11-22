@@ -787,10 +787,12 @@ static bool M_LoadLara(
             lara_meshes_arr->length);
         return false;
     }
+
+    OBJECT_MESH *const mesh_base = Object_GetMesh(0);
     for (int i = 0; i < (signed)lara_meshes_arr->length; i++) {
-        size_t idx = lara->mesh_ptrs[i] - g_MeshBase;
+        size_t idx = lara->mesh_ptrs[i] - mesh_base;
         idx = JSON_ArrayGetInt(lara_meshes_arr, i, idx);
-        lara->mesh_ptrs[i] = &g_MeshBase[idx];
+        lara->mesh_ptrs[i] = mesh_base + idx;
     }
 
     lara->target = NULL;
@@ -1219,8 +1221,9 @@ static JSON_OBJECT *M_DumpLara(LARA_INFO *lara)
 
     JSON_ObjectAppendInt(lara_obj, "mesh_effects", lara->mesh_effects);
     JSON_ARRAY *lara_meshes_arr = JSON_ArrayNew();
+    const OBJECT_MESH *const mesh_base = Object_GetMesh(0);
     for (int i = 0; i < LM_NUMBER_OF; i++) {
-        JSON_ArrayAppendInt(lara_meshes_arr, lara->mesh_ptrs[i] - g_MeshBase);
+        JSON_ArrayAppendInt(lara_meshes_arr, lara->mesh_ptrs[i] - mesh_base);
     }
     JSON_ObjectAppendArray(lara_obj, "meshes", lara_meshes_arr);
 

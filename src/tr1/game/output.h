@@ -55,12 +55,12 @@ void Output_CalculateLight(int32_t x, int32_t y, int32_t z, int16_t room_num);
 void Output_CalculateStaticLight(int16_t adder);
 void Output_CalculateObjectLighting(const ITEM *item, const BOUNDS_16 *bounds);
 
-void Output_DrawPolygons(const int16_t *obj_ptr, int clip);
-void Output_DrawPolygons_I(const int16_t *obj_ptr, int32_t clip);
+void Output_DrawObjectMesh(const OBJECT_MESH *mesh, int32_t clip);
+void Output_DrawInterpolatedObjectMesh(const OBJECT_MESH *mesh, int32_t clip);
 
 void Output_SetSkyboxEnabled(bool enabled);
 bool Output_IsSkyboxEnabled(void);
-void Output_DrawSkybox(const int16_t *obj_ptr);
+void Output_DrawSkybox(const OBJECT_MESH *mesh);
 
 void Output_DrawRoom(const ROOM_MESH *mesh);
 void Output_DrawShadow(int16_t size, const BOUNDS_16 *bounds, const ITEM *item);

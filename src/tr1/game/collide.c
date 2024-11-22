@@ -518,21 +518,20 @@ int32_t Collide_GetSpheres(ITEM *item, SPHERE *ptr, int32_t world_space)
     Matrix_RotYXZpack(*packed_rotation++);
 
     OBJECT *object = &g_Objects[item->object_id];
-    int16_t **meshpp = &g_Meshes[object->mesh_idx];
     int32_t *bone = &g_AnimBones[object->bone_idx];
 
-    int16_t *objptr = *meshpp++;
+    const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx);
     Matrix_Push();
-    Matrix_TranslateRel(objptr[0], objptr[1], objptr[2]);
+    Matrix_TranslateRel(mesh->center.x, mesh->center.y, mesh->center.z);
     ptr->x = x + (g_MatrixPtr->_03 >> W2V_SHIFT);
     ptr->y = y + (g_MatrixPtr->_13 >> W2V_SHIFT);
     ptr->z = z + (g_MatrixPtr->_23 >> W2V_SHIFT);
-    ptr->r = DISABLE_REFLECTION_BIT(objptr[3]);
+    ptr->r = mesh->radius;
     ptr++;
     Matrix_Pop();
 
     int16_t *extra_rotation = item->data ? item->data : &null_rotation;
-    for (int i = 1; i < object->nmeshes; i++) {
+    for (int32_t i = 1; i < object->nmeshes; i++) {
         int32_t bone_extra_flags = bone[0];
         if (bone_extra_flags & BEB_POP) {
             Matrix_Pop();
@@ -554,13 +553,13 @@ int32_t Collide_GetSpheres(ITEM *item, SPHERE *ptr, int32_t world_space)
             Matrix_RotZ(*extra_rotation++);
         }
 
-        objptr = *meshpp++;
+        mesh = Object_GetMesh(object->mesh_idx + i);
         Matrix_Push();
-        Matrix_TranslateRel(objptr[0], objptr[1], objptr[2]);
+        Matrix_TranslateRel(mesh->center.x, mesh->center.y, mesh->center.z);
         ptr->x = x + (g_MatrixPtr->_03 >> W2V_SHIFT);
         ptr->y = y + (g_MatrixPtr->_13 >> W2V_SHIFT);
         ptr->z = z + (g_MatrixPtr->_23 >> W2V_SHIFT);
-        ptr->r = DISABLE_REFLECTION_BIT(objptr[3]);
+        ptr->r = mesh->radius;
         Matrix_Pop();
 
         ptr++;

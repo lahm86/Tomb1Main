@@ -256,7 +256,7 @@ static void M_DrawSkybox(void)
     const OBJECT skybox = g_Objects[O_SKYBOX];
     const FRAME_INFO *const frame = g_Anims[skybox.anim_idx].frame_ptr;
     Matrix_RotYXZpack(frame->mesh_rots[0]);
-    Output_DrawSkybox(g_Meshes[skybox.mesh_idx]);
+    Output_DrawSkybox(Object_GetMesh(skybox.mesh_idx));
 
     Matrix_Pop();
 }
@@ -302,8 +302,9 @@ void Room_DrawSingleRoom(int16_t room_num)
                 Output_GetObjectBounds(&g_StaticObjects[mesh->static_num].p);
             if (clip) {
                 Output_CalculateStaticLight(mesh->shade);
-                Output_DrawPolygons(
-                    g_Meshes[g_StaticObjects[mesh->static_num].mesh_num], clip);
+                Output_DrawObjectMesh(
+                    Object_GetMesh(g_StaticObjects[mesh->static_num].mesh_num),
+                    clip);
             }
             Matrix_Pop();
         }

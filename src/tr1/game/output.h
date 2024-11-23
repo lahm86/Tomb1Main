@@ -5,16 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// TODO: remove these macros
-#define IS_REFLECTION_ENABLED(target) ((uint16_t)(target) & 0x8000)
-#define DISABLE_REFLECTION_BIT(target) ((uint16_t)(target) & ~0x8000)
-#define TOGGLE_REFLECTION_ENABLED(target, enabled)                             \
-    if (enabled) {                                                             \
-        target |= 0x8000;                                                      \
-    } else {                                                                   \
-        target &= ~0x8000;                                                     \
-    }
-
 bool Output_Init(void);
 void Output_Shutdown(void);
 void Output_ReserveVertexBuffer(size_t size);

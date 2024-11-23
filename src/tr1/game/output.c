@@ -187,7 +187,7 @@ static void M_DrawObjectQuadsEnvMap(
             uv[j] = &m_EnvMapUV[vertex_num];
         }
 
-        if (!IS_REFLECTION_ENABLED(face->flags)) {
+        if (!face->enable_reflection) {
             continue;
         }
 
@@ -210,7 +210,7 @@ static void M_DrawObjectTrianglesEnvMap(
             uv[j] = &m_EnvMapUV[vertex_num];
         }
 
-        if (!IS_REFLECTION_ENABLED(face->flags)) {
+        if (face->enable_reflection) {
             continue;
         }
 
@@ -744,8 +744,7 @@ void Output_DrawObjectMesh(const OBJECT_MESH *const mesh, const int32_t clip)
     M_DrawFlatQuads(mesh->flat_quads, mesh->num_flat_quads);
     M_DrawFlatTriangles(mesh->flat_triangles, mesh->num_flat_triangles);
 
-    if (IS_REFLECTION_ENABLED(mesh->flags)
-        && g_Config.rendering.enable_reflections) {
+    if (mesh->enable_reflection && g_Config.rendering.enable_reflections) {
         if (!M_CalcVerticeEnvMap(mesh)) {
             return;
         }

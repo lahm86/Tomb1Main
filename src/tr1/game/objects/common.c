@@ -403,22 +403,22 @@ void Object_SetMeshReflective(
     }
 
     OBJECT_MESH *const mesh = Object_GetMesh(object->mesh_idx + mesh_idx);
-    TOGGLE_REFLECTION_ENABLED(mesh->flags, enabled);
+    mesh->enable_reflection = enabled;
 
     for (int32_t i = 0; i < mesh->num_tex_quads; i++) {
-        TOGGLE_REFLECTION_ENABLED((&mesh->tex_quads[i])->flags, enabled);
+        (&mesh->tex_quads[i])->enable_reflection = enabled;
     }
 
     for (int32_t i = 0; i < mesh->num_tex_triangles; i++) {
-        TOGGLE_REFLECTION_ENABLED((&mesh->tex_triangles[i])->flags, enabled);
+        (&mesh->tex_triangles[i])->enable_reflection = enabled;
     }
 
     for (int32_t i = 0; i < mesh->num_flat_quads; i++) {
-        TOGGLE_REFLECTION_ENABLED((&mesh->flat_quads[i])->flags, enabled);
+        (&mesh->flat_quads[i])->enable_reflection = enabled;
     }
 
     for (int32_t i = 0; i < mesh->num_flat_triangles; i++) {
-        TOGGLE_REFLECTION_ENABLED((&mesh->flat_triangles[i])->flags, enabled);
+        (&mesh->flat_triangles[i])->enable_reflection = enabled;
     }
 }
 

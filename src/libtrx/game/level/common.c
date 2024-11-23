@@ -91,7 +91,7 @@ static void M_ReadObjectMesh(OBJECT_MESH *const mesh, const int16_t *data)
     mesh->center.z = *data++;
     mesh->radius = *data++;
     data++; // Originally 4 bytes for radius
-    mesh->flags = 0;
+    mesh->enable_reflection = false;
 
     {
         mesh->num_vertices = *data++;
@@ -135,7 +135,7 @@ static void M_ReadObjectMesh(OBJECT_MESH *const mesh, const int16_t *data)
                 face->vertices[k] = (uint16_t)*data++;
             }
             face->texture = (uint16_t)*data++;
-            face->flags = 0;
+            face->enable_reflection = false;
         }
     }
 
@@ -149,7 +149,7 @@ static void M_ReadObjectMesh(OBJECT_MESH *const mesh, const int16_t *data)
                 face->vertices[k] = (uint16_t)*data++;
             }
             face->texture = (uint16_t)*data++;
-            face->flags = 0;
+            face->enable_reflection = false;
         }
     }
 
@@ -163,7 +163,7 @@ static void M_ReadObjectMesh(OBJECT_MESH *const mesh, const int16_t *data)
                 face->vertices[k] = (uint16_t)*data++;
             }
             face->texture = (uint16_t)*data++;
-            face->flags = 0;
+            face->enable_reflection = false;
         }
     }
 
@@ -177,7 +177,7 @@ static void M_ReadObjectMesh(OBJECT_MESH *const mesh, const int16_t *data)
                 face->vertices[k] = (uint16_t)*data++;
             }
             face->texture = (uint16_t)*data++;
-            face->flags = 0;
+            face->enable_reflection = false;
         }
     }
 }

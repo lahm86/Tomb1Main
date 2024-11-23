@@ -17,7 +17,7 @@ typedef struct __PACKING {
 } OBJECT_BOUNDS;
 
 typedef struct __PACKING {
-    uint16_t flags;
+    bool enable_reflection;
     XYZ_16 center;
     int16_t radius;
     int16_t num_lights;

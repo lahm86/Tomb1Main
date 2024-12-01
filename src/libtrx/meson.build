@@ -97,6 +97,8 @@ sources = [
   'game/input/backends/keyboard.c',
   'game/input/common.c',
   'game/items.c',
+  'game/inject/common.c',
+  'game/inject/file.c',
   'game/level/common.c',
   'game/objects/common.c',
   'game/objects/names.c',

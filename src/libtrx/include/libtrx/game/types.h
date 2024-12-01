@@ -20,3 +20,16 @@ typedef struct __PACKING {
     uint16_t vertices[3];
     bool enable_reflections;
 } FACE3;
+
+typedef struct __PACKING {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB_888;
+
+typedef struct __PACKING {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+} RGBA_8888;

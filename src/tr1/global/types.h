@@ -379,19 +379,6 @@ typedef struct {
 } RGB_F;
 
 typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-} RGB_888;
-
-typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-} RGBA_8888;
-
-typedef struct {
     int32_t _00;
     int32_t _01;
     int32_t _02;
@@ -833,39 +820,6 @@ typedef struct {
     int16_t randomness;
     int16_t flags;
 } SAMPLE_INFO;
-
-typedef struct {
-    int32_t mesh_count;
-    int32_t mesh_ptr_count;
-    int32_t anim_count;
-    int32_t anim_change_count;
-    int32_t anim_range_count;
-    int32_t anim_command_count;
-    int32_t anim_bone_count;
-    int32_t anim_frame_data_count;
-    int32_t anim_frame_count;
-    int32_t anim_frame_mesh_rot_count;
-    int32_t *anim_frame_offsets;
-    int32_t object_count;
-    int32_t static_count;
-    int32_t texture_count;
-    int32_t texture_page_count;
-    uint8_t *texture_palette_page_ptrs;
-    RGBA_8888 *texture_rgb_page_ptrs;
-    int16_t *floor_data;
-    int32_t anim_texture_range_count;
-    int32_t item_count;
-    int32_t sprite_info_count;
-    int32_t sprite_count;
-    int32_t overlap_count;
-    int32_t sample_info_count;
-    int32_t sample_count;
-    int32_t *sample_offsets;
-    int32_t sample_data_size;
-    char *sample_data;
-    RGB_888 *palette;
-    int32_t palette_size;
-} LEVEL_INFO;
 
 typedef enum {
     TB_UNSPECIFIED = -1,

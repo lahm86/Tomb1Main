@@ -14,33 +14,6 @@
 #define INJECTION_CURRENT_VERSION 1
 #define NULL_FD_INDEX ((uint16_t)(-1))
 
-typedef enum {
-    INJ_VERSION_1 = 1,
-} INJECTION_VERSION;
-
-typedef enum {
-    INJ_GENERAL = 0,
-    INJ_FLOOR_DATA = 4,
-    INJ_ITEM_POSITION = 7,
-} INJECTION_TYPE;
-
-typedef enum {
-    FET_TRIGGER_PARAM = 0,
-    FET_MUSIC_ONESHOT = 1,
-    FET_FD_INSERT = 2,
-    FET_ROOM_SHIFT = 3,
-    FET_TRIGGER_ITEM = 4,
-    FET_ROOM_PROPERTIES = 5,
-    FET_TRIGGER_TYPE = 6,
-} FLOOR_EDIT_TYPE;
-
-typedef struct {
-    VFILE *fp;
-    INJECTION_VERSION version;
-    INJECTION_TYPE type;
-    bool relevant;
-} INJECTION;
-
 static int32_t m_NumInjections = 0;
 static INJECTION *m_Injections = NULL;
 static int32_t m_DataCounts[IDT_NUMBER_OF] = { 0 };

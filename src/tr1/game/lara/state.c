@@ -720,7 +720,7 @@ void Lara_State_DieMidas(ITEM *item, COLL_INFO *coll)
 
     Object_SetReflective(O_LARA_EXTRA, true);
 
-    int frm = item->frame_num - g_Anims[item->anim_num].frame_base;
+    int frm = item->frame_num - Item_GetAnim(item)->frame_base;
     switch (frm) {
     case 5:
         g_Lara.mesh_effects |= (1 << LM_FOOT_L);

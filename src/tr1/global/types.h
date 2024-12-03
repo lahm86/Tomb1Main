@@ -199,14 +199,6 @@ typedef enum {
 } ANIM_COMMAND;
 
 typedef enum {
-    BEB_POP = 1 << 0,
-    BEB_PUSH = 1 << 1,
-    BEB_ROT_X = 1 << 2,
-    BEB_ROT_Y = 1 << 3,
-    BEB_ROT_Z = 1 << 4,
-} BONE_EXTRA_BITS;
-
-typedef enum {
     RF_UNDERWATER = 1,
 } ROOM_FLAG;
 
@@ -842,10 +834,8 @@ typedef struct {
     int32_t anim_range_count;
     int32_t anim_command_count;
     int32_t anim_bone_count;
-    int32_t anim_frame_data_count;
-    int32_t anim_frame_count;
-    int32_t anim_frame_mesh_rot_count;
-    int32_t *anim_frame_offsets;
+    int32_t raw_frame_count;
+    int16_t *raw_frames;
     int32_t object_count;
     int32_t static_count;
     int32_t texture_count;

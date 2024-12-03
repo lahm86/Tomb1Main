@@ -57,16 +57,16 @@ void Lara_Draw(ITEM *item)
         switch (g_Lara.hit_direction) {
         default:
         case DIR_NORTH:
-            frame = g_Anims[object->anim_idx + LA_SPAZ_FORWARD].frame_ptr;
+            frame = Anim_GetAnim(object->anim_idx + LA_SPAZ_FORWARD)->frame_ptr;
             break;
         case DIR_EAST:
-            frame = g_Anims[object->anim_idx + LA_SPAZ_RIGHT].frame_ptr;
+            frame = Anim_GetAnim(object->anim_idx + LA_SPAZ_RIGHT)->frame_ptr;
             break;
         case DIR_SOUTH:
-            frame = g_Anims[object->anim_idx + LA_SPAZ_BACK].frame_ptr;
+            frame = Anim_GetAnim(object->anim_idx + LA_SPAZ_BACK)->frame_ptr;
             break;
         case DIR_WEST:
-            frame = g_Anims[object->anim_idx + LA_SPAZ_LEFT].frame_ptr;
+            frame = Anim_GetAnim(object->anim_idx + LA_SPAZ_LEFT)->frame_ptr;
             break;
         }
 
@@ -98,7 +98,7 @@ void Lara_Draw(ITEM *item)
 
     Output_CalculateObjectLighting(item, &frame->bounds);
 
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
     int32_t *packed_rotation = frame->mesh_rots;
 
     Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
@@ -370,7 +370,7 @@ void Lara_Draw_I(
 
     Output_CalculateObjectLighting(item, &frame1->bounds);
 
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
     int32_t *packed_rotation1 = frame1->mesh_rots;
     int32_t *packed_rotation2 = frame2->mesh_rots;
 

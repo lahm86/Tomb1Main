@@ -396,7 +396,7 @@ static void M_DrawPickup3D(DISPLAY_PICKUP *pu)
     Output_SetupAboveWater(false);
 
     OBJECT *obj = &g_Objects[Inv_GetItemOption(pu->object_id)];
-    const FRAME_INFO *const frame = g_Anims[obj->anim_idx].frame_ptr;
+    const FRAME_INFO *const frame = Anim_GetAnim(obj->anim_idx)->frame_ptr;
 
     Matrix_Push();
     Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
@@ -404,7 +404,7 @@ static void M_DrawPickup3D(DISPLAY_PICKUP *pu)
         -(frame->bounds.min.x + frame->bounds.max.x) / 2,
         -(frame->bounds.min.y + frame->bounds.max.y) / 2,
         -(frame->bounds.min.z + frame->bounds.max.z) / 2);
-    int32_t *bone = &g_AnimBones[obj->bone_idx];
+    int32_t *bone = Object_GetBone(obj);
     int32_t *packed_rotation = frame->mesh_rots;
     Matrix_RotYXZpack(*packed_rotation++);
 

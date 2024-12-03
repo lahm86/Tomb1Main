@@ -84,6 +84,11 @@ void Object_SetMeshOffset(OBJECT_MESH *const mesh, const int32_t data_offset)
     mesh->priv = (void *)(intptr_t)data_offset;
 }
 
+int32_t *Object_GetBone(const OBJECT *const object)
+{
+    return Anim_GetBone(object->bone_idx);
+}
+
 void Object_SwapMesh(
     const GAME_OBJECT_ID object1_id, const GAME_OBJECT_ID object2_id,
     const int32_t mesh_num)

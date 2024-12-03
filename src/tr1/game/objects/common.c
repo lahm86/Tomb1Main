@@ -97,7 +97,7 @@ void Object_DrawPickupItem(ITEM *item)
 
     OBJECT *object = &g_Objects[item_num_option];
 
-    const FRAME_INFO *frame = g_Anims[item->anim_num].frame_ptr;
+    const FRAME_INFO *frame = Item_GetAnim(item)->frame_ptr;
 
     // Restore the old frame number in case we need to get the sprite again.
     item->frame_num = old_frame_num;
@@ -197,7 +197,7 @@ void Object_DrawPickupItem(ITEM *item)
         // of the code in DrawAnimatingItem starting with the line that
         // matches the following line.
         int32_t bit = 1;
-        int32_t *bone = &g_AnimBones[object->bone_idx];
+        int32_t *bone = Object_GetBone(object);
 
         Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
 
@@ -248,7 +248,7 @@ void Object_DrawInterpolatedObject(
 
     Matrix_Push();
     int32_t mesh_num = 1;
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
 
     ASSERT(rate != 0);
     if (!frac) {

@@ -60,7 +60,7 @@ void Natla_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    g_AnimBones[obj->bone_idx + 8] |= BEB_ROT_Z | BEB_ROT_X;
+    Anim_AddBoneFlags(obj->bone_idx + 8, BEB_ROT_X | BEB_ROT_Z);
 }
 
 void Natla_Control(int16_t item_num)

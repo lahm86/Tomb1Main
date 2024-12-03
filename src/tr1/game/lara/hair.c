@@ -57,7 +57,8 @@ void Lara_Hair_Initialise(void)
     m_FirstHair = true;
     Lara_Hair_SetLaraType(O_LARA);
 
-    int32_t *bone = &g_AnimBones[g_Objects[O_HAIR].bone_idx];
+    const OBJECT *const hair_object = Object_GetObject(O_HAIR);
+    const int32_t *bone = Object_GetBone(hair_object);
 
     m_Hair[0].rot.y = 0;
     m_Hair[0].rot.x = -PHD_90;
@@ -110,6 +111,8 @@ void Lara_Hair_Control(void)
     in_cutscene = m_LaraType != O_LARA;
     object = &g_Objects[m_LaraType];
 
+    const OBJECT *const hair_object = Object_GetObject(O_HAIR);
+
     if (!in_cutscene && g_Lara.hit_direction >= 0) {
         int16_t spaz = object->anim_idx;
 
@@ -131,7 +134,7 @@ void Lara_Hair_Control(void)
             break;
         }
 
-        frame = g_Anims[spaz].frame_ptr;
+        frame = Anim_GetAnim(spaz)->frame_ptr;
         frame += g_Lara.hit_frame;
 
         frac = 0;
@@ -145,7 +148,7 @@ void Lara_Hair_Control(void)
         g_LaraItem->pos.x, g_LaraItem->pos.y, g_LaraItem->pos.z);
     Matrix_RotYXZ(g_LaraItem->rot.y, g_LaraItem->rot.x, g_LaraItem->rot.z);
 
-    bone = &g_AnimBones[object->bone_idx];
+    bone = Object_GetBone(object);
     if (frac) {
         Matrix_InitInterpolate(frac, rate);
         int32_t *packed_rotation1 = frmptr[0]->mesh_rots;
@@ -317,7 +320,7 @@ void Lara_Hair_Control(void)
     pos.z = g_MatrixPtr->_23 >> W2V_SHIFT;
     Matrix_Pop();
 
-    bone = &g_AnimBones[g_Objects[O_HAIR].bone_idx];
+    bone = Object_GetBone(hair_object);
 
     m_Hair[0].pos = pos;
 

@@ -1,11 +1,13 @@
 #include "game/level/common.h"
 
+#include "benchmark.h"
 #include "debug.h"
 #include "game/gamebuf.h"
 #include "game/inject.h"
 #include "game/objects/common.h"
 #include "game/rooms.h"
 #include "log.h"
+#include "memory.h"
 #include "utils.h"
 #include "vector.h"
 
@@ -211,4 +213,142 @@ void Level_ReadObjectMeshes(
     LOG_INFO("%d unique meshes constructed", unique_indices->count);
 
     Vector_Free(unique_indices);
+}
+
+void Level_ReadAnims(
+    const int32_t base_idx, const int32_t num_anims, VFILE *const file)
+{
+#if TR_VERSION == 1
+    for (int i = 0; i < num_anims; i++) {
+        ANIM *const anim = Anim_GetAnim(base_idx + i);
+
+        anim->frame_ofs = VFile_ReadU32(file);
+        anim->interpolation = VFile_ReadS16(file);
+        anim->current_anim_state = VFile_ReadS16(file);
+        anim->velocity = VFile_ReadS32(file);
+        anim->acceleration = VFile_ReadS32(file);
+        anim->frame_base = VFile_ReadS16(file);
+        anim->frame_end = VFile_ReadS16(file);
+        anim->jump_anim_num = VFile_ReadS16(file);
+        anim->jump_frame_num = VFile_ReadS16(file);
+        anim->num_changes = VFile_ReadS16(file);
+        anim->change_idx = VFile_ReadS16(file);
+        anim->num_commands = VFile_ReadS16(file);
+        anim->command_idx = VFile_ReadS16(file);
+    }
+#endif
+}
+
+void Level_ReadAnimChanges(
+    const int32_t base_idx, const int32_t num_changes, VFILE *const file)
+{
+    for (int32_t i = 0; i < num_changes; i++) {
+        ANIM_CHANGE *const anim_change = Anim_GetChange(base_idx + i);
+        anim_change->goal_anim_state = VFile_ReadS16(file);
+        anim_change->num_ranges = VFile_ReadS16(file);
+        anim_change->range_idx = VFile_ReadS16(file);
+    }
+}
+
+void Level_ReadAnimRanges(
+    const int32_t base_idx, const int32_t num_ranges, VFILE *const file)
+{
+    for (int32_t i = 0; i < num_ranges; i++) {
+        ANIM_RANGE *const anim_range = Anim_GetRange(base_idx + i);
+        anim_range->start_frame = VFile_ReadS16(file);
+        anim_range->end_frame = VFile_ReadS16(file);
+        anim_range->link_anim_num = VFile_ReadS16(file);
+        anim_range->link_frame_num = VFile_ReadS16(file);
+    }
+}
+
+void Level_ReadAnimCommands(
+    const int32_t base_idx, const int32_t num_cmds, VFILE *const file)
+{
+    // TODO: structure these, although they are of variable size.
+    for (int32_t i = 0; i < num_cmds; i++) {
+        int16_t *const cmd = Anim_GetCommand(base_idx + i);
+        *cmd = VFile_ReadS16(file);
+    }
+}
+
+void Level_ReadAnimBones(
+    const int32_t base_idx, const int32_t num_bones, VFILE *const file)
+{
+    // TODO: structure these.
+    for (int32_t i = 0; i < num_bones; i++) {
+        int32_t *const bone = Anim_GetBone(base_idx + i);
+        *bone = VFile_ReadS32(file);
+    }
+}
+
+void Level_ReadAnimFrames(
+    const int16_t *const data, const int32_t data_length,
+    const int32_t anim_count)
+{
+#if TR_VERSION == 1
+    BENCHMARK *const benchmark = Benchmark_Start();
+
+    int32_t frame_count = 0;
+    const int16_t *data_ptr = data;
+    while (data_ptr - data < data_length) {
+        data_ptr += 9; // bounds + offset pos
+        const int16_t num_meshes = *data_ptr++; // NB this won't work in TR2
+        data_ptr += num_meshes * sizeof(int32_t) / sizeof(int16_t);
+        frame_count++;
+    }
+
+    LOG_INFO("%d anim frames", frame_count);
+
+    Anim_InitialiseFrames(frame_count);
+
+    int32_t *offsets = Memory_Alloc(sizeof(int32_t) * frame_count);
+
+    data_ptr = data;
+    for (int32_t i = 0; i < frame_count; i++) {
+        offsets[i] = (data_ptr - data) * sizeof(int16_t);
+        FRAME_INFO *const frame = Anim_GetFrame(i);
+        frame->bounds.min.x = *data_ptr++;
+        frame->bounds.max.x = *data_ptr++;
+        frame->bounds.min.y = *data_ptr++;
+        frame->bounds.max.y = *data_ptr++;
+        frame->bounds.min.z = *data_ptr++;
+        frame->bounds.max.z = *data_ptr++;
+        frame->offset.x = *data_ptr++;
+        frame->offset.y = *data_ptr++;
+        frame->offset.z = *data_ptr++;
+        frame->nmeshes = *data_ptr++;
+        frame->mesh_rots =
+            GameBuf_Alloc(sizeof(int32_t) * frame->nmeshes, GBUF_ANIM_FRAMES);
+        memcpy(frame->mesh_rots, data_ptr, sizeof(int32_t) * frame->nmeshes);
+        data_ptr += frame->nmeshes * sizeof(int32_t) / sizeof(int16_t);
+    }
+
+    for (int i = 0; i < anim_count; i++) {
+        ANIM *const anim = Anim_GetAnim(i);
+        bool found = false;
+        for (int j = 0; j < frame_count; j++) {
+            if (offsets[j] == (signed)anim->frame_ofs) {
+                anim->frame_ptr = Anim_GetFrame(j);
+                found = true;
+                break;
+            }
+        }
+        ASSERT(found);
+    }
+
+    for (int32_t i = 0; i < O_NUMBER_OF; i++) {
+        OBJECT *const object = Object_GetObject(i);
+        if (!object->loaded || object->anim_idx == -1) {
+            continue;
+        }
+
+        const ANIM *const anim = Anim_GetAnim(object->anim_idx);
+        object->frame_base = anim->frame_ptr;
+    }
+
+    Memory_FreePointer(&offsets);
+
+    Benchmark_End(benchmark, NULL);
+#endif
 }

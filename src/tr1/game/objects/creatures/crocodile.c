@@ -81,7 +81,7 @@ void Croc_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    g_AnimBones[obj->bone_idx + 28] |= BEB_ROT_Y;
+    Anim_AddBoneFlags(obj->bone_idx + 28, BEB_ROT_Y);
 }
 
 void Croc_Control(int16_t item_num)
@@ -219,7 +219,7 @@ void Alligator_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    g_AnimBones[obj->bone_idx + 28] |= BEB_ROT_Y;
+    Anim_AddBoneFlags(obj->bone_idx + 28, BEB_ROT_Y);
 }
 
 void Alligator_Control(int16_t item_num)
@@ -296,9 +296,8 @@ void Alligator_Control(int16_t item_num)
 
     case ALLIGATOR_STATE_ATTACK:
         if (item->frame_num
-            == (g_Config.fix_alligator_ai
-                    ? ALLIGATOR_BITE_AF
-                    : g_Anims[item->anim_num].frame_base)) {
+            == (g_Config.fix_alligator_ai ? ALLIGATOR_BITE_AF
+                                          : Item_GetAnim(item)->frame_base)) {
             item->required_anim_state = ALLIGATOR_STATE_EMPTY;
         }
 

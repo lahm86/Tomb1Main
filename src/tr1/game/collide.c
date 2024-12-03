@@ -519,7 +519,7 @@ int32_t Collide_GetSpheres(ITEM *item, SPHERE *ptr, int32_t world_space)
 
     OBJECT *object = &g_Objects[item->object_id];
     const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx);
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
 
     Matrix_Push();
     Matrix_TranslateRel(mesh->center.x, mesh->center.y, mesh->center.z);
@@ -619,7 +619,7 @@ void Collide_GetJointAbsPosition(ITEM *item, XYZ_32 *vec, int32_t joint)
     int32_t *packed_rotation = frame->mesh_rots;
     Matrix_RotYXZpack(*packed_rotation++);
 
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
 
     int16_t *extra_rotation = (int16_t *)item->data;
     for (int i = 0; i < joint; i++) {

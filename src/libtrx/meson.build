@@ -66,6 +66,7 @@ sources = [
   'enum_map.c',
   'event_manager.c',
   'filesystem.c',
+  'game/anims/common.c',
   'game/backpack.c',
   'game/clock/common.c',
   'game/clock/timer.c',

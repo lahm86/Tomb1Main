@@ -23,7 +23,7 @@ int32_t Effect_ExplodingDeath(
     int32_t *packed_rotation = frame->mesh_rots;
     Matrix_RotYXZpack(*packed_rotation++);
 
-    int32_t *bone = &g_AnimBones[object->bone_idx];
+    int32_t *bone = Object_GetBone(object);
 #if 0
     // XXX: present in OG, removed by GLrage on the grounds that it sometimes
     // crashes.

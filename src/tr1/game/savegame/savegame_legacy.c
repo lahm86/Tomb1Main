@@ -284,8 +284,8 @@ static void M_WriteLara(LARA_INFO *lara)
 static void M_WriteArm(LARA_ARM *arm)
 {
     const LEVEL_INFO *const level_info = Level_GetInfo();
-    const int32_t frame_base =
-        level_info->anim_frame_offsets[arm->frame_base - g_AnimFrames];
+    // frame_base is superfluous
+    const int32_t frame_base = 0;
     M_Write(&frame_base, sizeof(int32_t));
     M_Write(&arm->frame_num, sizeof(int16_t));
     M_Write(&arm->lock, sizeof(int16_t));

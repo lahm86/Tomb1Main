@@ -20,7 +20,7 @@ static const char *M_GetBufferName(const GAME_BUFFER buffer)
         case GBUF_MESH_POINTERS:            return "Mesh Pointers";
         case GBUF_MESHES:                   return "Meshes";
         case GBUF_ANIMS:                    return "Anims";
-        case GBUF_STRUCTS:                  return "Structs";
+        case GBUF_ANIM_CHANGES:             return "Changes";
         case GBUF_ANIM_RANGES:              return "Ranges";
         case GBUF_ANIM_COMMANDS:            return "Commands";
         case GBUF_ANIM_BONES:               return "Bones";

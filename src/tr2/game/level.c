@@ -284,8 +284,8 @@ static void __cdecl M_LoadAnimChanges(VFILE *const file)
     BENCHMARK *const benchmark = Benchmark_Start();
     const int32_t num_anim_changes = VFile_ReadS32(file);
     LOG_INFO("anim changes: %d", num_anim_changes);
-    g_AnimChanges =
-        GameBuf_Alloc(sizeof(ANIM_CHANGE) * num_anim_changes, GBUF_STRUCTS);
+    g_AnimChanges = GameBuf_Alloc(
+        sizeof(ANIM_CHANGE) * num_anim_changes, GBUF_ANIM_CHANGES);
     for (int32_t i = 0; i < num_anim_changes; i++) {
         ANIM_CHANGE *const change = &g_AnimChanges[i];
         change->goal_anim_state = VFile_ReadS16(file);

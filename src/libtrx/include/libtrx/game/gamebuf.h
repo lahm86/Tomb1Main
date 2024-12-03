@@ -47,7 +47,7 @@ typedef enum {
     GBUF_MESH_POINTERS            = 2,
     GBUF_MESHES                   = 3,
     GBUF_ANIMS                    = 4,
-    GBUF_STRUCTS                  = 5,
+    GBUF_ANIM_CHANGES             = 5,
     GBUF_ANIM_RANGES              = 6,
     GBUF_ANIM_COMMANDS            = 7,
     GBUF_ANIM_BONES               = 8,

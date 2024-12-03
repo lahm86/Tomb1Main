@@ -33,3 +33,8 @@ ITEM *Item_Find(const GAME_OBJECT_ID object_id)
 
     return NULL;
 }
+
+ANIM *Item_GetAnim(const ITEM *const item)
+{
+    return Anim_GetAnim(item->anim_num);
+}

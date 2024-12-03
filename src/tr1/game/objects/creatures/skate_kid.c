@@ -57,7 +57,7 @@ void SkateKid_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx, BEB_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx, BF_ROT_Y);
 
     if (!g_Objects[O_SKATEBOARD].loaded) {
         LOG_WARNING(

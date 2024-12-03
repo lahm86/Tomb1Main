@@ -81,7 +81,7 @@ void Croc_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 28, BEB_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 28, BF_ROT_Y);
 }
 
 void Croc_Control(int16_t item_num)
@@ -219,7 +219,7 @@ void Alligator_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 28, BEB_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 28, BF_ROT_Y);
 }
 
 void Alligator_Control(int16_t item_num)

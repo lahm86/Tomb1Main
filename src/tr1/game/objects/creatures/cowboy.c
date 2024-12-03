@@ -49,7 +49,7 @@ void Cowboy_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx, BEB_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx, BF_ROT_Y);
 }
 
 void Cowboy_Control(int16_t item_num)

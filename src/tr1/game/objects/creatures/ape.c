@@ -126,7 +126,7 @@ void Ape_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 52, BEB_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 52, BF_ROT_Y);
 }
 
 void Ape_Control(int16_t item_num)

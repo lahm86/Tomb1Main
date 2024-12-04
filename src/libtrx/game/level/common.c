@@ -343,6 +343,9 @@ void Level_ReadAnimFrames(
         ANIM *const anim = Anim_GetAnim(i);
         const int16_t *data_ptr = &data[anim->frame_ofs / sizeof(int16_t)];
         for (int32_t j = 0; j < anim_frame_counts[i]; j++) {
+#if TR_VERSION > 1
+            const int16_t *const frame_start = data_ptr;
+#endif
             FRAME_INFO *const frame = Anim_GetFrame(frame_idx++);
             if (j == 0) {
                 anim->frame_ptr = frame;
@@ -363,11 +366,19 @@ void Level_ReadAnimFrames(
 #if TR_VERSION == 1
             data_ptr++; // Skip num_meshes
 #endif
+            // NB rots will need to be parsed for TR2 as some are 2 bytes
+            // others 4...
             frame->mesh_rots = GameBuf_Alloc(
                 sizeof(int32_t) * cur_obj->nmeshes, GBUF_ANIM_FRAMES);
             memcpy(
                 frame->mesh_rots, data_ptr, sizeof(int32_t) * cur_obj->nmeshes);
             data_ptr += cur_obj->nmeshes * sizeof(int32_t) / sizeof(int16_t);
+
+#if TR_VERSION > 1
+            // ...and hence TR2 frames are aligned so need to skip padding.
+            data_ptr +=
+                MAX(0, (anim->interpolation >> 8) - (data_ptr - frame_start));
+#endif
         }
     }
 

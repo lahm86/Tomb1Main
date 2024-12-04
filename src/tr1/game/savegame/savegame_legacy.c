@@ -603,6 +603,10 @@ bool Savegame_Legacy_LoadFromFile(MYFILE *fp, GAME_INFO *game_info)
             M_Read(&item->required_anim_state, sizeof(int16_t));
             M_Read(&item->anim_num, sizeof(int16_t));
             M_Read(&item->frame_num, sizeof(int16_t));
+
+            if (item->object_id == O_LARA) {
+                item->anim_num += Object_GetObject(O_LARA)->anim_idx;
+            }
         }
 
         if (M_ItemHasHitPoints(item)) {

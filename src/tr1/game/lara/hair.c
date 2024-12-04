@@ -85,31 +85,14 @@ void Lara_Hair_Control(void)
         return;
     }
 
-    bool in_cutscene;
-    OBJECT *object;
-    int32_t distance;
-    FRAME_INFO *frame;
-    const OBJECT_MESH *mesh;
-    int16_t room_num;
-    FRAME_INFO *frmptr[2];
-    XYZ_32 pos;
-    const SECTOR *sector;
-    int32_t i;
-    int32_t water_level;
-    int32_t height;
-    int32_t frac;
-    int32_t rate;
-    SPHERE sphere[5];
-    int32_t j;
-    int32_t x;
-    int32_t y;
-    int32_t z;
-
-    in_cutscene = m_LaraType != O_LARA;
-    object = &g_Objects[m_LaraType];
-
+    const bool in_cutscene = m_LaraType != O_LARA;
+    const OBJECT *const object = Object_GetObject(m_LaraType);
     const OBJECT *const hair_object = Object_GetObject(O_HAIR);
 
+    const FRAME_INFO *frame;
+    FRAME_INFO *frmptr[2];
+    int32_t frac;
+    int32_t rate;
     if (!in_cutscene && g_Lara.hit_direction >= 0) {
         int16_t spaz = object->anim_idx;
 
@@ -145,7 +128,7 @@ void Lara_Hair_Control(void)
         g_LaraItem->pos.x, g_LaraItem->pos.y, g_LaraItem->pos.z);
     Matrix_RotYXZ(g_LaraItem->rot.y, g_LaraItem->rot.x, g_LaraItem->rot.z);
 
-    //    const ANIM_BONE *bone = Object_GetBone(object);
+    SPHERE sphere[5];
     if (frac) {
         Matrix_InitInterpolate(frac, rate);
         int32_t *packed_rotation1 = frmptr[0]->mesh_rots;
@@ -158,7 +141,7 @@ void Lara_Hair_Control(void)
 
         // hips
         Matrix_Push_I();
-        mesh = Object_GetMesh(object->mesh_idx + LM_HIPS);
+        const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx + LM_HIPS);
         Matrix_TranslateRel_I(mesh->center.x, mesh->center.y, mesh->center.z);
         Matrix_Interpolate();
         sphere[0].x = g_MatrixPtr->_03 >> W2V_SHIFT;
@@ -168,7 +151,6 @@ void Lara_Hair_Control(void)
         Matrix_Pop_I();
 
         // torso
-        // bone += LM_TORSO - 1;
         const ANIM_BONE *bone = Anim_GetBone(object->bone_idx + LM_TORSO - 1);
         Matrix_TranslateRel_I(bone->pos.x, bone->pos.y, bone->pos.z);
         Matrix_RotYXZpack_I(
@@ -244,7 +226,7 @@ void Lara_Hair_Control(void)
 
         // hips
         Matrix_Push();
-        mesh = Object_GetMesh(object->mesh_idx + LM_HIPS);
+        const OBJECT_MESH *mesh = Object_GetMesh(object->mesh_idx + LM_HIPS);
         Matrix_TranslateRel(mesh->center.x, mesh->center.y, mesh->center.z);
         sphere[0].x = g_MatrixPtr->_03 >> W2V_SHIFT;
         sphere[0].y = g_MatrixPtr->_13 >> W2V_SHIFT;
@@ -313,9 +295,11 @@ void Lara_Hair_Control(void)
         Matrix_TranslateRel(HAIR_OFFSET_X, HAIR_OFFSET_Y, HAIR_OFFSET_Z);
     }
 
-    pos.x = g_MatrixPtr->_03 >> W2V_SHIFT;
-    pos.y = g_MatrixPtr->_13 >> W2V_SHIFT;
-    pos.z = g_MatrixPtr->_23 >> W2V_SHIFT;
+    const XYZ_32 pos = {
+        .x = g_MatrixPtr->_03 >> W2V_SHIFT,
+        .y = g_MatrixPtr->_13 >> W2V_SHIFT,
+        .z = g_MatrixPtr->_23 >> W2V_SHIFT,
+    };
     Matrix_Pop();
 
     const ANIM_BONE *bone = Object_GetBone(hair_object);
@@ -325,7 +309,7 @@ void Lara_Hair_Control(void)
     if (m_FirstHair) {
         m_FirstHair = false;
 
-        for (i = 0; i < HAIR_SEGMENTS; i++, bone++) {
+        for (int32_t i = 0; i < HAIR_SEGMENTS; i++, bone++) {
             Matrix_PushUnit();
             Matrix_TranslateSet(
                 m_Hair[i].pos.x, m_Hair[i].pos.y, m_Hair[i].pos.z);
@@ -339,26 +323,29 @@ void Lara_Hair_Control(void)
             Matrix_Pop();
         }
     } else {
+        int16_t room_num;
+        int32_t water_level;
         if (in_cutscene) {
             room_num = M_GetRoom(pos.x, pos.y, pos.z);
             water_level = NO_HEIGHT;
         } else {
             room_num = g_LaraItem->room_num;
-            x = g_LaraItem->pos.x
+            const int32_t x = g_LaraItem->pos.x
                 + (frame->bounds.min.x + frame->bounds.max.x) / 2;
-            y = g_LaraItem->pos.y
+            const int32_t y = g_LaraItem->pos.y
                 + (frame->bounds.min.y + frame->bounds.max.y) / 2;
-            z = g_LaraItem->pos.z
+            const int32_t z = g_LaraItem->pos.z
                 + (frame->bounds.min.z + frame->bounds.max.z) / 2;
             water_level = Room_GetWaterHeight(x, y, z, room_num);
         }
 
-        for (i = 1; i < HAIR_SEGMENTS + 1; i++, bone++) {
+        int32_t distance;
+        for (int32_t i = 1; i < HAIR_SEGMENTS + 1; i++, bone++) {
             m_HVel[0] = m_Hair[i].pos;
 
-            sector = Room_GetSector(
+            const SECTOR *const sector = Room_GetSector(
                 m_Hair[i].pos.x, m_Hair[i].pos.y, m_Hair[i].pos.z, &room_num);
-            height = Room_GetHeight(
+            const int32_t height = Room_GetHeight(
                 sector, m_Hair[i].pos.x, m_Hair[i].pos.y, m_Hair[i].pos.z);
 
             m_Hair[i].pos.x += m_HVel[i].x * 3 / 4;
@@ -391,13 +378,12 @@ void Lara_Hair_Control(void)
                 break;
             }
 
-            for (j = 0; j < 5; j++) {
-                x = m_Hair[i].pos.x - sphere[j].x;
-                y = m_Hair[i].pos.y - sphere[j].y;
-                z = m_Hair[i].pos.z - sphere[j].z;
+            for (int32_t j = 0; j < 5; j++) {
+                const int32_t x = m_Hair[i].pos.x - sphere[j].x;
+                const int32_t y = m_Hair[i].pos.y - sphere[j].y;
+                const int32_t z = m_Hair[i].pos.z - sphere[j].z;
 
-                distance = x * x + y * y + z * z;
-
+                distance = SQUARE(x) + SQUARE(y) + SQUARE(z);
                 if (distance < SQUARE(sphere[j].r)) {
                     distance = Math_Sqrt(distance);
 

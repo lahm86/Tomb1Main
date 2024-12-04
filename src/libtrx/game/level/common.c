@@ -284,73 +284,92 @@ void Level_ReadAnimBones(
     }
 }
 
+static OBJECT *M_GetAnimObject(const int32_t anim_idx)
+{
+    for (int32_t i = 0; i < O_NUMBER_OF; i++) {
+        OBJECT *const object = Object_GetObject(i);
+        if (object->loaded && object->nmeshes >= 0
+            && object->anim_idx == anim_idx) {
+            return object;
+        }
+    }
+
+    return NULL;
+}
+
 void Level_ReadAnimFrames(
     const int16_t *const data, const int32_t data_length,
     const int32_t anim_count)
 {
-#if TR_VERSION == 1
     BENCHMARK *const benchmark = Benchmark_Start();
 
-    int32_t frame_count = 0;
-    const int16_t *data_ptr = data;
-    while (data_ptr - data < data_length) {
-        data_ptr += 9; // bounds + offset pos
-        const int16_t num_meshes = *data_ptr++; // NB this won't work in TR2
-        data_ptr += num_meshes * sizeof(int32_t) / sizeof(int16_t);
-        frame_count++;
-    }
-
-    LOG_INFO("%d anim frames", frame_count);
-
-    Anim_InitialiseFrames(frame_count);
-
-    int32_t *offsets = Memory_Alloc(sizeof(int32_t) * frame_count);
-
-    data_ptr = data;
-    for (int32_t i = 0; i < frame_count; i++) {
-        offsets[i] = (data_ptr - data) * sizeof(int16_t);
-        FRAME_INFO *const frame = Anim_GetFrame(i);
-        frame->bounds.min.x = *data_ptr++;
-        frame->bounds.max.x = *data_ptr++;
-        frame->bounds.min.y = *data_ptr++;
-        frame->bounds.max.y = *data_ptr++;
-        frame->bounds.min.z = *data_ptr++;
-        frame->bounds.max.z = *data_ptr++;
-        frame->offset.x = *data_ptr++;
-        frame->offset.y = *data_ptr++;
-        frame->offset.z = *data_ptr++;
-        frame->nmeshes = *data_ptr++;
-        frame->mesh_rots =
-            GameBuf_Alloc(sizeof(int32_t) * frame->nmeshes, GBUF_ANIM_FRAMES);
-        memcpy(frame->mesh_rots, data_ptr, sizeof(int32_t) * frame->nmeshes);
-        data_ptr += frame->nmeshes * sizeof(int32_t) / sizeof(int16_t);
-    }
-
+    const OBJECT *current_object = NULL;
+    int32_t total_frame_count = 0;
+    int32_t anim_frame_counts[anim_count];
     for (int32_t i = 0; i < anim_count; i++) {
-        ANIM *const anim = Anim_GetAnim(i);
-        bool found = false;
-        for (int32_t j = 0; j < frame_count; j++) {
-            if (offsets[j] == (signed)anim->frame_ofs) {
-                anim->frame_ptr = Anim_GetFrame(j);
-                found = true;
-                break;
-            }
-        }
-        ASSERT(found);
+        const ANIM *const anim = Anim_GetAnim(i);
+#if TR_VERSION == 1
+        const int32_t frame_count = (int32_t)ceil(
+            ((anim->frame_end - anim->frame_base) / (float)anim->interpolation)
+            + 1);
+#else
+        uint32_t next_ofs = i == anim_count - 1
+            ? (unsigned)(data_length * sizeof(int16_t))
+            : Anim_GetAnim(i + 1)->frame_ofs;
+        const int32_t frame_count = (next_ofs - anim->frame_ofs)
+            / (int32_t)(sizeof(int16_t) * (anim->interpolation >> 8));
+#endif
+        total_frame_count += frame_count;
+        anim_frame_counts[i] = frame_count;
     }
 
-    for (int32_t i = 0; i < O_NUMBER_OF; i++) {
-        OBJECT *const object = Object_GetObject(i);
-        if (!object->loaded || object->anim_idx == -1) {
+    LOG_INFO("%d anim frames", total_frame_count);
+
+    Anim_InitialiseFrames(total_frame_count);
+
+    OBJECT *cur_obj = NULL;
+    int32_t frame_idx = 0;
+    for (int32_t i = 0; i < anim_count; i++) {
+        OBJECT *const next_obj = M_GetAnimObject(i);
+        const bool obj_changed = next_obj != NULL;
+        if (obj_changed) {
+            cur_obj = next_obj;
+        }
+
+        if (cur_obj == NULL) {
             continue;
         }
 
-        const ANIM *const anim = Anim_GetAnim(object->anim_idx);
-        object->frame_base = anim->frame_ptr;
+        ANIM *const anim = Anim_GetAnim(i);
+        const int16_t *data_ptr = &data[anim->frame_ofs / sizeof(int16_t)];
+        for (int32_t j = 0; j < anim_frame_counts[i]; j++) {
+            FRAME_INFO *const frame = Anim_GetFrame(frame_idx++);
+            if (j == 0) {
+                anim->frame_ptr = frame;
+                if (obj_changed) {
+                    cur_obj->frame_base = frame;
+                }
+            }
+
+            frame->bounds.min.x = *data_ptr++;
+            frame->bounds.max.x = *data_ptr++;
+            frame->bounds.min.y = *data_ptr++;
+            frame->bounds.max.y = *data_ptr++;
+            frame->bounds.min.z = *data_ptr++;
+            frame->bounds.max.z = *data_ptr++;
+            frame->offset.x = *data_ptr++;
+            frame->offset.y = *data_ptr++;
+            frame->offset.z = *data_ptr++;
+#if TR_VERSION == 1
+            data_ptr++; // Skip num_meshes
+#endif
+            frame->mesh_rots = GameBuf_Alloc(
+                sizeof(int32_t) * cur_obj->nmeshes, GBUF_ANIM_FRAMES);
+            memcpy(
+                frame->mesh_rots, data_ptr, sizeof(int32_t) * cur_obj->nmeshes);
+            data_ptr += cur_obj->nmeshes * sizeof(int32_t) / sizeof(int16_t);
+        }
     }
 
-    Memory_FreePointer(&offsets);
-
     Benchmark_End(benchmark, NULL);
-#endif
 }

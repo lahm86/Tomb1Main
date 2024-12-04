@@ -196,7 +196,7 @@ void Level_ReadObjectMeshes(
     OBJECT_MESH *const meshes =
         GameBuf_Alloc(sizeof(OBJECT_MESH) * unique_indices->count, GBUF_MESHES);
     size_t start_pos = VFile_GetPos(file);
-    for (int i = 0; i < unique_indices->count; i++) {
+    for (int32_t i = 0; i < unique_indices->count; i++) {
         const int32_t pointer = *(const int32_t *)Vector_Get(unique_indices, i);
         VFile_SetPos(file, start_pos + pointer);
         M_ReadObjectMesh(&meshes[i], file);
@@ -219,7 +219,7 @@ void Level_ReadAnims(
     const int32_t base_idx, const int32_t num_anims, VFILE *const file)
 {
 #if TR_VERSION == 1
-    for (int i = 0; i < num_anims; i++) {
+    for (int32_t i = 0; i < num_anims; i++) {
         ANIM *const anim = Anim_GetAnim(base_idx + i);
 
         anim->frame_ofs = VFile_ReadU32(file);
@@ -326,10 +326,10 @@ void Level_ReadAnimFrames(
         data_ptr += frame->nmeshes * sizeof(int32_t) / sizeof(int16_t);
     }
 
-    for (int i = 0; i < anim_count; i++) {
+    for (int32_t i = 0; i < anim_count; i++) {
         ANIM *const anim = Anim_GetAnim(i);
         bool found = false;
-        for (int j = 0; j < frame_count; j++) {
+        for (int32_t j = 0; j < frame_count; j++) {
             if (offsets[j] == (signed)anim->frame_ofs) {
                 anim->frame_ptr = Anim_GetFrame(j);
                 found = true;

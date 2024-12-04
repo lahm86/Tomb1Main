@@ -31,7 +31,7 @@ int32_t Object_GetMeshOffset(const OBJECT_MESH *mesh);
 void Object_SetMeshOffset(OBJECT_MESH *mesh, int32_t data_offset);
 
 OBJECT_MESH *Object_GetMesh(int32_t index);
-int32_t *Object_GetBone(const OBJECT *object);
+ANIM_BONE *Object_GetBone(const OBJECT *object);
 void Object_SwapMesh(
     GAME_OBJECT_ID object1_id, GAME_OBJECT_ID object2_id, int32_t mesh_num);
 

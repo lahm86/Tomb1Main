@@ -256,7 +256,7 @@ static void M_LoadFromFile(INJECTION *injection, const char *filename)
     info->anim_change_count = VFile_ReadS32(fp);
     info->anim_range_count = VFile_ReadS32(fp);
     info->anim_cmd_count = VFile_ReadS32(fp);
-    info->anim_bone_count = VFile_ReadS32(fp);
+    info->anim_bone_count = VFile_ReadS32(fp) / BONE_SIZE;
     info->raw_frame_count = VFile_ReadS32(fp);
     info->anim_count = VFile_ReadS32(fp);
     info->object_count = VFile_ReadS32(fp);
@@ -593,7 +593,7 @@ static void M_ObjectData(
 
         const int16_t num_meshes = VFile_ReadS16(fp);
         const int16_t mesh_idx = VFile_ReadS16(fp);
-        const int32_t bone_idx = VFile_ReadS32(fp);
+        const int32_t bone_idx = VFile_ReadS32(fp) / BONE_SIZE;
 
         // When mesh data has been omitted from the injection, this indicates
         // that we wish to retain what's already defined so to avoid duplicate

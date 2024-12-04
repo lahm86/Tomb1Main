@@ -15,6 +15,11 @@ typedef struct __PACKING {
     int16_t link_frame_num;
 } ANIM_RANGE;
 
+typedef struct __PACKING {
+    int32_t flags;
+    XYZ_32 pos;
+} ANIM_BONE;
+
 #if TR_VERSION == 1
 typedef struct __PACKING {
     BOUNDS_16 bounds;

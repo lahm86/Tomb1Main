@@ -23,7 +23,7 @@ int32_t Effect_ExplodingDeath(
     int32_t *packed_rotation = frame->mesh_rots;
     Matrix_RotYXZpack(*packed_rotation++);
 
-    int32_t *bone = Object_GetBone(object);
+    const ANIM_BONE *bone = Object_GetBone(object);
 #if 0
     // XXX: present in OG, removed by GLrage on the grounds that it sometimes
     // crashes.
@@ -55,27 +55,26 @@ int32_t Effect_ExplodingDeath(
     }
 
     for (int i = 1; i < object->nmeshes; i++) {
-        int32_t bone_extra_flags = *bone++;
-        if (bone_extra_flags & BF_MATRIX_POP) {
+        if (bone->flags & BF_MATRIX_POP) {
             Matrix_Pop();
         }
-        if (bone_extra_flags & BF_MATRIX_PUSH) {
+        if (bone->flags & BF_MATRIX_PUSH) {
             Matrix_Push();
         }
 
-        Matrix_TranslateRel(bone[0], bone[1], bone[2]);
+        Matrix_TranslateRel(bone->pos.x, bone->pos.y, bone->pos.z);
         Matrix_RotYXZpack(*packed_rotation++);
 
 #if 0
     if (extra_rotation) {
-        if (bone_extra_flags & (BF_ROT_X | BF_ROT_Y | BF_ROT_Z)) {
-            if (bone_extra_flags & BF_ROT_Y) {
+        if (bone->flags & (BF_ROT_X | BF_ROT_Y | BF_ROT_Z)) {
+            if (bone->flags & BF_ROT_Y) {
                 Matrix_RotY(*extra_rotation++);
             }
-            if (bone_extra_flags & BF_ROT_X) {
+            if (bone->flags & BF_ROT_X) {
                 Matrix_RotX(*extra_rotation++);
             }
-            if (bone_extra_flags & BF_ROT_Z) {
+            if (bone->flags & BF_ROT_Z) {
                 Matrix_RotZ(*extra_rotation++);
             }
         }
@@ -106,7 +105,7 @@ int32_t Effect_ExplodingDeath(
             item->mesh_bits -= bit;
         }
 
-        bone += 3;
+        bone++;
     }
 
     Matrix_Pop();

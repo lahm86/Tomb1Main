@@ -75,7 +75,7 @@ void Rat_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 4, BF_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 1, BF_ROT_Y);
 }
 
 void Rat_Control(int16_t item_num)
@@ -185,7 +185,7 @@ void Vole_Setup(OBJECT *obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 4, BF_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 1, BF_ROT_Y);
 }
 
 void Vole_Control(int16_t item_num)

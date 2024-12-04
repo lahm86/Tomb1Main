@@ -84,7 +84,7 @@ void Object_SetMeshOffset(OBJECT_MESH *const mesh, const int32_t data_offset)
     mesh->priv = (void *)(intptr_t)data_offset;
 }
 
-int32_t *Object_GetBone(const OBJECT *const object)
+ANIM_BONE *Object_GetBone(const OBJECT *const object)
 {
     return Anim_GetBone(object->bone_idx);
 }

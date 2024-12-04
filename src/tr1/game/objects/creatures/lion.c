@@ -57,7 +57,7 @@ static void M_SetupBase(OBJECT *const obj)
     obj->save_hitpoints = 1;
     obj->save_anim = 1;
     obj->save_flags = 1;
-    Anim_AddBoneFlags(obj->bone_idx + 76, BF_ROT_Y);
+    Anim_AddBoneFlags(obj->bone_idx + 19, BF_ROT_Y);
 }
 
 void Lion_SetupLion(OBJECT *obj)

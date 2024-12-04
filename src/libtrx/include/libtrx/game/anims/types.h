@@ -25,7 +25,7 @@ typedef struct __PACKING {
     BOUNDS_16 bounds;
     XYZ_16 offset;
     int16_t nmeshes;
-    int32_t *mesh_rots;
+    XYZ_16 *mesh_rots;
 } FRAME_INFO;
 #else
 typedef struct __unaligned

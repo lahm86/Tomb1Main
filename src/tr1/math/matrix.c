@@ -6,10 +6,6 @@
 
 #include <stddef.h>
 
-#define EXTRACT_ROT_Y(rots) (((rots >> 10) & 0x3FF) << 6)
-#define EXTRACT_ROT_X(rots) (((rots >> 20) & 0x3FF) << 6)
-#define EXTRACT_ROT_Z(rots) ((rots & 0x3FF) << 6)
-
 static MATRIX m_MatrixStack[MAX_MATRICES] = { 0 };
 static int32_t m_IMRate = 0;
 static int32_t m_IMFrac = 0;
@@ -170,14 +166,9 @@ void Matrix_RotYXZ(PHD_ANGLE ry, PHD_ANGLE rx, PHD_ANGLE rz)
     Matrix_RotZ(rz);
 }
 
-void Matrix_RotYXZpack(int32_t rots)
+void Matrix_RotYXZpack(const XYZ_16 *const rot)
 {
-    const PHD_ANGLE ry = EXTRACT_ROT_Y(rots);
-    const PHD_ANGLE rx = EXTRACT_ROT_X(rots);
-    const PHD_ANGLE rz = EXTRACT_ROT_Z(rots);
-    Matrix_RotY(ry);
-    Matrix_RotX(rx);
-    Matrix_RotZ(rz);
+    Matrix_RotYXZ(rot->y, rot->x, rot->z);
 }
 
 void Matrix_TranslateRel(int32_t x, int32_t y, int32_t z)
@@ -343,7 +334,7 @@ void Matrix_RotYXZ_I(PHD_ANGLE y, PHD_ANGLE x, PHD_ANGLE z)
     g_MatrixPtr = old_matrix;
 }
 
-void Matrix_RotYXZpack_I(int32_t r1, int32_t r2)
+void Matrix_RotYXZpack_I(const XYZ_16 *const r1, const XYZ_16 *const r2)
 {
     Matrix_RotYXZpack(r1);
     MATRIX *old_matrix = g_MatrixPtr;

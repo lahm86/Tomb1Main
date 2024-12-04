@@ -255,7 +255,7 @@ static void M_DrawSkybox(void)
 
     const OBJECT *const skybox = Object_GetObject(O_SKYBOX);
     const FRAME_INFO *const frame = Anim_GetAnim(skybox->anim_idx)->frame_ptr;
-    Matrix_RotYXZpack(frame->mesh_rots[0]);
+    Matrix_RotYXZpack(&frame->mesh_rots[0]);
     Output_DrawSkybox(Object_GetMesh(skybox->mesh_idx));
 
     Matrix_Pop();

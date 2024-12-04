@@ -11,6 +11,14 @@
 #include "utils.h"
 #include "vector.h"
 
+#define EXTRACT_ROT_X(r) (((r & 0x3FF0) >> 4) << 6)
+#define EXTRACT_ROT_Y(r0, r1) ((((r0 & 0xF) << 6) | ((r1 & 0xFC00) >> 10)) << 6)
+#define EXTRACT_ROT_Z(r) ((r & 0x3FF) << 6)
+#if TR_VERSION > 1
+    #define EXTRACT_ROT_MODE(r) (r & 0xC000)
+    #define EXTRACT_ONE_ROT(r) EXTRACT_ROT_Z(r)
+#endif
+
 static void M_ReadVertex(XYZ_16 *vertex, VFILE *file);
 static void M_ReadFace4(FACE4 *face, VFILE *file);
 static void M_ReadFace3(FACE3 *face, VFILE *file);
@@ -366,16 +374,41 @@ void Level_ReadAnimFrames(
 #if TR_VERSION == 1
             data_ptr++; // Skip num_meshes
 #endif
-            // NB rots will need to be parsed for TR2 as some are 2 bytes
-            // others 4...
             frame->mesh_rots = GameBuf_Alloc(
-                sizeof(int32_t) * cur_obj->nmeshes, GBUF_ANIM_FRAMES);
-            memcpy(
-                frame->mesh_rots, data_ptr, sizeof(int32_t) * cur_obj->nmeshes);
-            data_ptr += cur_obj->nmeshes * sizeof(int32_t) / sizeof(int16_t);
+                sizeof(XYZ_16) * cur_obj->nmeshes, GBUF_ANIM_FRAMES);
+            for (int32_t k = 0; k < cur_obj->nmeshes; k++) {
+                XYZ_16 *const rot = &frame->mesh_rots[k];
+#if TR_VERSION == 1
+                const int16_t rot_val1 = *data_ptr++;
+                const int16_t rot_val0 = *data_ptr++;
+                rot->x = EXTRACT_ROT_X(rot_val0);
+                rot->y = EXTRACT_ROT_Y(rot_val0, rot_val1);
+                rot->z = EXTRACT_ROT_Z(rot_val1);
+#else
+                const int16_t rot_val0 = *data_ptr++;
+                const ROT_PACK_MODE mode = EXTRACT_ROT_MODE(rot_val0);
+                switch (mode) {
+                case RPM_X:
+                    rot->x = EXTRACT_ONE_ROT(rot_val0);
+                    break;
+                case RPM_Y:
+                    rot->y = EXTRACT_ONE_ROT(rot_val0);
+                    break;
+                case RPM_Z:
+                    rot->z = EXTRACT_ONE_ROT(rot_val0);
+                    break;
+                default:
+                    const int16_t rot_val1 = *data_ptr++;
+                    rot->x = EXTRACT_ROT_X(rot_val0);
+                    rot->y = EXTRACT_ROT_Y(rot_val0, rot_val1);
+                    rot->z = EXTRACT_ROT_Z(rot_val1);
+                    break;
+                }
+#endif
+            }
 
 #if TR_VERSION > 1
-            // ...and hence TR2 frames are aligned so need to skip padding.
+            // TR2 frames are aligned so we need to skip padding.
             data_ptr +=
                 MAX(0, (anim->interpolation >> 8) - (data_ptr - frame_start));
 #endif

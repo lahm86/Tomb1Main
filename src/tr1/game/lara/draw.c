@@ -12,18 +12,18 @@
 #define LIMB_BONE_COUNT 3
 
 static void M_ProcessBone(
-    const ANIM_BONE *bones, const int32_t *rotation, LARA_MESH mesh_idx,
+    const ANIM_BONE *bones, const XYZ_16 *rotations, LARA_MESH mesh_idx,
     int32_t clip);
 static void M_ProcessBone_I(
-    const ANIM_BONE *bones, const int32_t *rotations1,
-    const int32_t *const rotations2, LARA_MESH mesh_idx, int32_t clip);
+    const ANIM_BONE *bones, const XYZ_16 *rotations1,
+    const XYZ_16 *const rotations2, LARA_MESH mesh_idx, int32_t clip);
 
 static void M_ProcessLimb(
-    const ANIM_BONE *bones, const int32_t *rotations, LARA_MESH mesh_idx,
+    const ANIM_BONE *bones, const XYZ_16 *rotations, LARA_MESH mesh_idx,
     int32_t clip);
 static void M_ProcessLimb_I(
-    const ANIM_BONE *bones, const int32_t *rotations1,
-    const int32_t *rotations2, LARA_MESH mesh_idx, int32_t clip);
+    const ANIM_BONE *bones, const XYZ_16 *rotations1, const XYZ_16 *rotations2,
+    LARA_MESH mesh_idx, int32_t clip);
 
 static void M_ProcessPistolArm(
     const ANIM_BONE *bones, LARA_MESH mesh_idx, int32_t clip);
@@ -42,12 +42,12 @@ static void M_Draw_I(
     int32_t frac, int32_t rate);
 
 static void M_ProcessBone(
-    const ANIM_BONE *const bones, const int32_t *const rotation,
+    const ANIM_BONE *const bones, const XYZ_16 *const rotations,
     const LARA_MESH mesh_idx, const int32_t clip)
 {
     const ANIM_BONE *bone = &bones[mesh_idx - 1];
     Matrix_TranslateRel(bone->pos.x, bone->pos.y, bone->pos.z);
-    Matrix_RotYXZpack(rotation[mesh_idx]);
+    Matrix_RotYXZpack(&rotations[mesh_idx]);
 
     if (mesh_idx == LM_TORSO) {
         Matrix_RotYXZ(
@@ -63,13 +63,13 @@ static void M_ProcessBone(
 }
 
 static void M_ProcessBone_I(
-    const ANIM_BONE *const bones, const int32_t *const rotations1,
-    const int32_t *const rotations2, const LARA_MESH mesh_idx,
+    const ANIM_BONE *const bones, const XYZ_16 *const rotations1,
+    const XYZ_16 *const rotations2, const LARA_MESH mesh_idx,
     const int32_t clip)
 {
     const ANIM_BONE *bone = &bones[mesh_idx - 1];
     Matrix_TranslateRel_I(bone->pos.x, bone->pos.y, bone->pos.z);
-    Matrix_RotYXZpack_I(rotations1[mesh_idx], rotations2[mesh_idx]);
+    Matrix_RotYXZpack_I(&rotations1[mesh_idx], &rotations2[mesh_idx]);
 
     if (mesh_idx == LM_TORSO) {
         Matrix_RotYXZ_I(
@@ -85,7 +85,7 @@ static void M_ProcessBone_I(
 }
 
 static void M_ProcessLimb(
-    const ANIM_BONE *const bones, const int32_t *const rotations,
+    const ANIM_BONE *const bones, const XYZ_16 *const rotations,
     const LARA_MESH mesh_idx, const int32_t clip)
 {
     for (int32_t i = 0; i < LIMB_BONE_COUNT; i++) {
@@ -94,8 +94,8 @@ static void M_ProcessLimb(
 }
 
 static void M_ProcessLimb_I(
-    const ANIM_BONE *const bones, const int32_t *const rotations1,
-    const int32_t *const rotations2, const LARA_MESH mesh_idx,
+    const ANIM_BONE *const bones, const XYZ_16 *const rotations1,
+    const XYZ_16 *const rotations2, const LARA_MESH mesh_idx,
     const int32_t clip)
 {
     for (int32_t i = 0; i < LIMB_BONE_COUNT; i++) {
@@ -121,15 +121,15 @@ static void M_ProcessPistolArm(
 
     const LARA_ARM arm =
         mesh_idx == LM_UARM_L ? g_Lara.left_arm : g_Lara.right_arm;
-    const int32_t *const rotation = arm.frame_base[arm.frame_num].mesh_rots;
+    const XYZ_16 *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
     Matrix_RotYXZ(
         arm.interp.result.rot.y, arm.interp.result.rot.x,
         arm.interp.result.rot.z);
-    Matrix_RotYXZpack(rotation[mesh_idx]);
+    Matrix_RotYXZpack(&rotations[mesh_idx]);
     M_DrawMesh(mesh_idx, clip, false);
 
-    M_ProcessBone(bones, rotation, mesh_idx + 1, clip);
-    M_ProcessBone(bones, rotation, mesh_idx + 2, clip);
+    M_ProcessBone(bones, rotations, mesh_idx + 1, clip);
+    M_ProcessBone(bones, rotations, mesh_idx + 2, clip);
 }
 
 static void M_ProcessPistolArm_I(
@@ -141,15 +141,15 @@ static void M_ProcessPistolArm_I(
 
     const LARA_ARM arm =
         mesh_idx == LM_UARM_L ? g_Lara.left_arm : g_Lara.right_arm;
-    const int32_t *const rotation = arm.frame_base[arm.frame_num].mesh_rots;
+    const XYZ_16 *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
     Matrix_RotYXZ(
         arm.interp.result.rot.y, arm.interp.result.rot.x,
         arm.interp.result.rot.z);
-    Matrix_RotYXZpack(rotation[mesh_idx]);
+    Matrix_RotYXZpack(&rotations[mesh_idx]);
     M_DrawMesh(mesh_idx, clip, false);
 
-    M_ProcessBone(bones, rotation, mesh_idx + 1, clip);
-    M_ProcessBone(bones, rotation, mesh_idx + 2, clip);
+    M_ProcessBone(bones, rotations, mesh_idx + 1, clip);
+    M_ProcessBone(bones, rotations, mesh_idx + 2, clip);
 }
 
 static void M_ProcessShotGunArm(
@@ -157,7 +157,7 @@ static void M_ProcessShotGunArm(
 {
     const LARA_ARM arm =
         mesh_idx == LM_UARM_L ? g_Lara.left_arm : g_Lara.right_arm;
-    const int32_t *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
+    const XYZ_16 *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
 
     M_ProcessLimb(bones, rotations, mesh_idx, clip);
 }
@@ -167,7 +167,7 @@ static void M_ProcessShotGunArm_I(
 {
     const LARA_ARM arm =
         mesh_idx == LM_UARM_L ? g_Lara.left_arm : g_Lara.right_arm;
-    const int32_t *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
+    const XYZ_16 *const rotations = arm.frame_base[arm.frame_num].mesh_rots;
 
     M_ProcessLimb_I(bones, rotations, rotations, mesh_idx, clip);
 }
@@ -212,8 +212,8 @@ static void M_Draw_I(
     Output_CalculateObjectLighting(item, &frame1->bounds);
 
     const ANIM_BONE *const bones = Object_GetBone(object);
-    const int32_t *const rotations1 = frame1->mesh_rots;
-    const int32_t *const rotations2 = frame2->mesh_rots;
+    const XYZ_16 *const rotations1 = frame1->mesh_rots;
+    const XYZ_16 *const rotations2 = frame2->mesh_rots;
 
     Matrix_InitInterpolate(frac, rate);
 
@@ -221,7 +221,7 @@ static void M_Draw_I(
         frame1->offset.x, frame1->offset.y, frame1->offset.z, frame2->offset.x,
         frame2->offset.y, frame2->offset.z);
 
-    Matrix_RotYXZpack_I(rotations1[LM_HIPS], rotations2[LM_HIPS]);
+    Matrix_RotYXZpack_I(&rotations1[LM_HIPS], &rotations2[LM_HIPS]);
     M_DrawMesh(LM_HIPS, clip, true);
 
     Matrix_Push_I();
@@ -378,24 +378,24 @@ void Lara_Draw(ITEM *item)
     Output_CalculateObjectLighting(item, &frame->bounds);
 
     const ANIM_BONE *const bones = Object_GetBone(object);
-    const int32_t *const rotation = frame->mesh_rots;
+    const XYZ_16 *const rotations = frame->mesh_rots;
 
     Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
-    Matrix_RotYXZpack(rotation[LM_HIPS]);
+    Matrix_RotYXZpack(&rotations[LM_HIPS]);
     M_DrawMesh(LM_HIPS, clip, false);
 
     Matrix_Push();
-    M_ProcessLimb(bones, rotation, LM_THIGH_L, clip);
+    M_ProcessLimb(bones, rotations, LM_THIGH_L, clip);
     Matrix_Pop();
 
     Matrix_Push();
-    M_ProcessLimb(bones, rotation, LM_THIGH_R, clip);
+    M_ProcessLimb(bones, rotations, LM_THIGH_R, clip);
     Matrix_Pop();
 
-    M_ProcessBone(bones, rotation, LM_TORSO, clip);
+    M_ProcessBone(bones, rotations, LM_TORSO, clip);
 
     Matrix_Push();
-    M_ProcessBone(bones, rotation, LM_HEAD, clip);
+    M_ProcessBone(bones, rotations, LM_HEAD, clip);
     *g_MatrixPtr = saved_matrix;
     Lara_Hair_Draw();
     Matrix_Pop();
@@ -409,11 +409,11 @@ void Lara_Draw(ITEM *item)
     switch (fire_arms) {
     case LGT_UNARMED:
         Matrix_Push();
-        M_ProcessLimb(bones, rotation, LM_UARM_R, clip);
+        M_ProcessLimb(bones, rotations, LM_UARM_R, clip);
         Matrix_Pop();
 
         Matrix_Push();
-        M_ProcessLimb(bones, rotation, LM_UARM_L, clip);
+        M_ProcessLimb(bones, rotations, LM_UARM_L, clip);
         Matrix_Pop();
         break;
 

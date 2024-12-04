@@ -20,8 +20,8 @@ int32_t Effect_ExplodingDeath(
     Matrix_RotYXZ(item->rot.y, item->rot.x, item->rot.z);
     Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
 
-    int32_t *packed_rotation = frame->mesh_rots;
-    Matrix_RotYXZpack(*packed_rotation++);
+    const XYZ_16 *rotations = frame->mesh_rots;
+    Matrix_RotYXZpack(rotations++);
 
     const ANIM_BONE *bone = Object_GetBone(object);
 #if 0
@@ -63,7 +63,7 @@ int32_t Effect_ExplodingDeath(
         }
 
         Matrix_TranslateRel(bone->pos.x, bone->pos.y, bone->pos.z);
-        Matrix_RotYXZpack(*packed_rotation++);
+        Matrix_RotYXZpack(rotations++);
 
 #if 0
     if (extra_rotation) {

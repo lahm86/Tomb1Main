@@ -221,8 +221,11 @@ void Level_ReadAnims(
 #if TR_VERSION == 1
     for (int32_t i = 0; i < num_anims; i++) {
         ANIM *const anim = Anim_GetAnim(base_idx + i);
-
+    #if TR_VERSION == 1
         anim->frame_ofs = VFile_ReadU32(file);
+    #else
+        VFile_Skip(sizeof(uint32_t)); // TODO: update ANIM struct for TR2
+    #endif
         anim->interpolation = VFile_ReadS16(file);
         anim->current_anim_state = VFile_ReadS16(file);
         anim->velocity = VFile_ReadS32(file);

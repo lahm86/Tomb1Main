@@ -31,7 +31,8 @@ static FRAME_INFO *m_Frames = NULL;
 static OBJECT *M_GetAnimObject(int32_t anim_idx);
 static int32_t M_GetAnimFrameCount(int32_t anim_idx);
 static int32_t M_ParseFrame(
-    FRAME_INFO *frame, const int16_t *data_ptr, int16_t num_meshes);
+    FRAME_INFO *frame, const int16_t *data_ptr, int16_t interp,
+    int16_t num_meshes);
 static int32_t M_ParseMeshRot(XYZ_16 *rot, const int16_t *data_ptr);
 
 static OBJECT *M_GetAnimObject(const int32_t anim_idx)
@@ -54,18 +55,25 @@ static int32_t M_GetAnimFrameCount(const int32_t anim_idx)
     return (int32_t)ceil(
         ((anim->frame_end - anim->frame_base) / (float)anim->interpolation)
         + 1);
-#else
+#elif 0 // Dependent on frame_ofs in TR2
     uint32_t next_ofs = anim_idx == m_AnimCount - 1
         ? (unsigned)(m_FrameDataLength * sizeof(int16_t))
         : Anim_GetAnim(anim_idx + 1)->frame_ofs;
     return (next_ofs - anim->frame_ofs)
         / (int32_t)(sizeof(int16_t) * (anim->interpolation >> 8));
+#else
+    return 0;
 #endif
 }
 
 static int32_t M_ParseFrame(
-    FRAME_INFO *const frame, const int16_t *data_ptr, const int16_t num_meshes)
+    FRAME_INFO *const frame, const int16_t *data_ptr, const int16_t interp,
+    const int16_t num_meshes)
 {
+#if TR_VERSION > 1
+    ASSERT_FAIL();
+    return 0;
+#else
     const int16_t *const frame_start = data_ptr;
 
     frame->bounds.min.x = *data_ptr++;
@@ -77,9 +85,9 @@ static int32_t M_ParseFrame(
     frame->offset.x = *data_ptr++;
     frame->offset.y = *data_ptr++;
     frame->offset.z = *data_ptr++;
-#if TR_VERSION == 1
+    #if TR_VERSION == 1
     ASSERT(num_meshes == *data_ptr++);
-#endif
+    #endif
 
     frame->mesh_rots =
         GameBuf_Alloc(sizeof(XYZ_16) * num_meshes, GBUF_ANIM_FRAMES);
@@ -88,11 +96,12 @@ static int32_t M_ParseFrame(
         data_ptr += M_ParseMeshRot(rot, data_ptr);
     }
 
-#if TR_VERSION > 1
+    #if TR_VERSION > 1
     // TR2 frames are aligned so we need to skip padding.
-    data_ptr += MAX(0, (anim->interpolation >> 8) - (data_ptr - frame_start));
-#endif
+    data_ptr += MAX(0, (interp >> 8) - (data_ptr - frame_start));
+    #endif
     return data_ptr - frame_start;
+#endif
 }
 
 static int32_t M_ParseMeshRot(XYZ_16 *const rot, const int16_t *data_ptr)
@@ -118,7 +127,7 @@ static int32_t M_ParseMeshRot(XYZ_16 *const rot, const int16_t *data_ptr)
         rot->z = EXTRACT_ONE_ROT(rot_val1);
         return 1;
     default:
-        const int16_t rot_val1 = *data_ptr++;
+        const int16_t rot_val2 = *data_ptr++;
         rot->x = EXTRACT_ROT_X(rot_val1);
         rot->y = EXTRACT_ROT_Y(rot_val1, rot_val2);
         rot->z = EXTRACT_ROT_Z(rot_val2);
@@ -130,8 +139,10 @@ static int32_t M_ParseMeshRot(XYZ_16 *const rot, const int16_t *data_ptr)
 void Anim_ParseFrames(
     const int16_t *data, const int32_t data_length, const int32_t anim_count)
 {
+#if TR_VERSION > 1
+    ASSERT_FAIL();
+#else
     BENCHMARK *const benchmark = Benchmark_Start();
-
     m_AnimCount = anim_count;
     m_FrameDataLength = data_length;
 
@@ -172,11 +183,13 @@ void Anim_ParseFrames(
                 }
             }
 
-            data_ptr += M_ParseFrame(frame, data_ptr, cur_obj->mesh_count);
+            data_ptr += M_ParseFrame(
+                frame, data_ptr, anim->interpolation, cur_obj->mesh_count);
         }
     }
 
     Benchmark_End(benchmark, NULL);
+#endif
 }
 
 FRAME_INFO *Anim_GetFrame(const int32_t frame_idx)

@@ -175,7 +175,7 @@ void Anim_ParseFrames(
         ANIM *const anim = Anim_GetAnim(i);
         const int16_t *data_ptr = &data[anim->frame_ofs / sizeof(int16_t)];
         for (int32_t j = 0; j < anim_frame_counts[i]; j++) {
-            FRAME_INFO *const frame = Anim_GetFrame(frame_idx++);
+            FRAME_INFO *const frame = &m_Frames[frame_idx++];
             if (j == 0) {
                 anim->frame_ptr = frame;
                 if (obj_changed) {
@@ -190,9 +190,4 @@ void Anim_ParseFrames(
 
     Benchmark_End(benchmark, NULL);
 #endif
-}
-
-FRAME_INFO *Anim_GetFrame(const int32_t frame_idx)
-{
-    return &m_Frames[frame_idx];
 }

@@ -793,7 +793,7 @@ static void M_CompleteSetup(int32_t level_num)
     Inject_AllInjections(&m_LevelInfo);
 
     // Parse and setup frame structures.
-    Level_ReadAnimFrames(
+    Anim_ParseFrames(
         m_LevelInfo.raw_frames, m_LevelInfo.raw_frame_count,
         m_LevelInfo.anim_count);
     Memory_FreePointer(&m_LevelInfo.raw_frames);

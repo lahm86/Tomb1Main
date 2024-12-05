@@ -7,7 +7,6 @@ static ANIM_CHANGE *m_Changes = NULL;
 static ANIM_RANGE *m_Ranges = NULL;
 static int16_t *m_Commands = NULL;
 static ANIM_BONE *m_Bones = NULL;
-static FRAME_INFO *m_Frames = NULL;
 
 void Anim_InitialiseAnims(const int32_t num_anims)
 {
@@ -34,11 +33,6 @@ void Anim_InitialiseCommands(const int32_t num_commands)
 void Anim_InitialiseBones(const int32_t num_bones)
 {
     m_Bones = GameBuf_Alloc(sizeof(ANIM_BONE) * num_bones, GBUF_ANIM_BONES);
-}
-
-void Anim_InitialiseFrames(const int32_t num_frames)
-{
-    m_Frames = GameBuf_Alloc(sizeof(FRAME_INFO) * num_frames, GBUF_ANIM_FRAMES);
 }
 
 ANIM *Anim_GetAnim(const int32_t anim_idx)
@@ -70,9 +64,4 @@ void Anim_AddBoneFlags(const int32_t bone_idx, const BONE_FLAGS flags)
 {
     ANIM_BONE *const bone = Anim_GetBone(bone_idx);
     bone->flags |= flags;
-}
-
-FRAME_INFO *Anim_GetFrame(const int32_t frame_idx)
-{
-    return &m_Frames[frame_idx];
 }

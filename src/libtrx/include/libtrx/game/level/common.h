@@ -10,5 +10,3 @@ void Level_ReadAnimChanges(int32_t base_idx, int32_t num_changes, VFILE *file);
 void Level_ReadAnimRanges(int32_t base_idx, int32_t num_ranges, VFILE *file);
 void Level_ReadAnimCommands(int32_t base_idx, int32_t num_cmds, VFILE *file);
 void Level_ReadAnimBones(int32_t base_idx, int32_t num_bones, VFILE *file);
-void Level_ReadAnimFrames(
-    const int16_t *data, int32_t data_length, int32_t anim_count);

@@ -366,7 +366,7 @@ static void M_LoadObjects(VFILE *file)
         const GAME_OBJECT_ID object_id = VFile_ReadS32(file);
         OBJECT *object = &g_Objects[object_id];
 
-        object->nmeshes = VFile_ReadS16(file);
+        object->mesh_count = VFile_ReadS16(file);
         object->mesh_idx = VFile_ReadS16(file);
         object->bone_idx = VFile_ReadS32(file) / BONE_SIZE;
 
@@ -456,12 +456,12 @@ static void M_LoadSprites(VFILE *file)
 
         if (object_id < O_NUMBER_OF) {
             OBJECT *object = &g_Objects[object_id];
-            object->nmeshes = num_meshes;
+            object->mesh_count = num_meshes;
             object->mesh_idx = mesh_idx;
             object->loaded = 1;
         } else if (object_id - O_NUMBER_OF < STATIC_NUMBER_OF) {
             STATIC_INFO *object = &g_StaticObjects[object_id - O_NUMBER_OF];
-            object->nmeshes = num_meshes;
+            object->mesh_count = num_meshes;
             object->mesh_num = mesh_idx;
             object->loaded = true;
         }
@@ -891,7 +891,7 @@ static size_t M_CalculateMaxVertices(void)
             continue;
         }
 
-        for (int32_t j = 0; j < object->nmeshes; j++) {
+        for (int32_t j = 0; j < object->mesh_count; j++) {
             const OBJECT_MESH *const mesh =
                 Object_GetMesh(object->mesh_idx + j);
             max_vertices = MAX(max_vertices, mesh->num_vertices);
@@ -900,7 +900,7 @@ static size_t M_CalculateMaxVertices(void)
 
     for (int32_t i = 0; i < STATIC_NUMBER_OF; i++) {
         const STATIC_INFO *static_info = &g_StaticObjects[i];
-        if (!static_info->loaded || static_info->nmeshes < 0) {
+        if (!static_info->loaded || static_info->mesh_count < 0) {
             continue;
         }
 

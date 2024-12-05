@@ -584,7 +584,7 @@ typedef struct {
 
 typedef struct {
     bool loaded;
-    int16_t nmeshes;
+    int16_t mesh_count;
     int16_t mesh_num;
     int16_t flags;
     BOUNDS_16 p;

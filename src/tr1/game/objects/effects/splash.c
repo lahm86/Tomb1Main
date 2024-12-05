@@ -17,7 +17,7 @@ void Splash_Control(int16_t fx_num)
 {
     FX *fx = &g_Effects[fx_num];
     fx->frame_num--;
-    if (fx->frame_num <= g_Objects[fx->object_id].nmeshes) {
+    if (fx->frame_num <= g_Objects[fx->object_id].mesh_count) {
         Effect_Kill(fx_num);
         return;
     }

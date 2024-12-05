@@ -922,7 +922,7 @@ void Lara_CatchFire(void)
             FX *const fx = &g_Effects[fx_num];
             fx->object_id = O_FLAME;
             fx->frame_num =
-                (g_Objects[O_FLAME].nmeshes * Random_GetControl()) / 0x7FFF;
+                (g_Objects[O_FLAME].mesh_count * Random_GetControl()) / 0x7FFF;
             fx->counter = -1 - Random_GetControl() * 24 / 0x7FFF;
         }
     }

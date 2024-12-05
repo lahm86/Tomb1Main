@@ -410,7 +410,7 @@ static void M_DrawPickup3D(DISPLAY_PICKUP *pu)
 
     Object_DrawMesh(obj->mesh_idx, 0, false);
 
-    for (int i = 1; i < obj->nmeshes; i++) {
+    for (int i = 1; i < obj->mesh_count; i++) {
         if (bone->flags & BF_MATRIX_POP) {
             Matrix_Pop();
         }

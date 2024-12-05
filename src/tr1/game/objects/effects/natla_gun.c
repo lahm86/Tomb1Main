@@ -16,7 +16,7 @@ void NatlaGun_Control(int16_t fx_num)
     OBJECT *object = &g_Objects[fx->object_id];
 
     fx->frame_num--;
-    if (fx->frame_num <= object->nmeshes) {
+    if (fx->frame_num <= object->mesh_count) {
         Effect_Kill(fx_num);
     }
 

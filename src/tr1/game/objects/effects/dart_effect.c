@@ -17,7 +17,7 @@ void DartEffect_Control(int16_t fx_num)
     if (fx->counter >= 3) {
         fx->counter = 0;
         fx->frame_num--;
-        if (fx->frame_num <= g_Objects[fx->object_id].nmeshes) {
+        if (fx->frame_num <= g_Objects[fx->object_id].mesh_count) {
             Effect_Kill(fx_num);
         }
     }

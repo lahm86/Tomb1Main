@@ -38,7 +38,7 @@ static OBJECT *M_GetAnimObject(const int32_t anim_idx)
 {
     for (int32_t i = 0; i < O_NUMBER_OF; i++) {
         OBJECT *const object = Object_GetObject(i);
-        if (object->loaded && object->nmeshes >= 0
+        if (object->loaded && object->mesh_count >= 0
             && object->anim_idx == anim_idx) {
             return object;
         }
@@ -172,7 +172,7 @@ void Anim_ParseFrames(
                 }
             }
 
-            data_ptr += M_ParseFrame(frame, data_ptr, cur_obj->nmeshes);
+            data_ptr += M_ParseFrame(frame, data_ptr, cur_obj->mesh_count);
         }
     }
 

@@ -531,7 +531,7 @@ int32_t Collide_GetSpheres(ITEM *item, SPHERE *ptr, int32_t world_space)
     Matrix_Pop();
 
     int16_t *extra_rotation = item->data ? item->data : &null_rotation;
-    for (int i = 1; i < object->nmeshes; i++) {
+    for (int i = 1; i < object->mesh_count; i++) {
         if (bone->flags & BF_MATRIX_POP) {
             Matrix_Pop();
         }
@@ -566,7 +566,7 @@ int32_t Collide_GetSpheres(ITEM *item, SPHERE *ptr, int32_t world_space)
     }
 
     Matrix_Pop();
-    return object->nmeshes;
+    return object->mesh_count;
 }
 
 int32_t Collide_TestCollision(ITEM *item, ITEM *lara_item)

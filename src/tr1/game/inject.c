@@ -423,12 +423,12 @@ static void M_TextureData(
 
         if (object_id < O_NUMBER_OF) {
             OBJECT *object = &g_Objects[object_id];
-            object->nmeshes = num_meshes;
+            object->mesh_count = num_meshes;
             object->mesh_idx = mesh_idx + level_info->sprite_info_count;
             object->loaded = 1;
         } else if (object_id - O_NUMBER_OF < STATIC_NUMBER_OF) {
             STATIC_INFO *object = &g_StaticObjects[object_id - O_NUMBER_OF];
-            object->nmeshes = num_meshes;
+            object->mesh_count = num_meshes;
             object->mesh_num = mesh_idx + level_info->sprite_info_count;
             object->loaded = true;
         }
@@ -599,7 +599,7 @@ static void M_ObjectData(
         // that we wish to retain what's already defined so to avoid duplicate
         // packing.
         if (!object->loaded || num_meshes) {
-            object->nmeshes = num_meshes;
+            object->mesh_count = num_meshes;
             object->mesh_idx = mesh_idx + level_info->mesh_ptr_count;
             object->bone_idx = bone_idx + level_info->anim_bone_count;
         }
@@ -661,7 +661,7 @@ static void M_AlignTextureReferences(
     const OBJECT *const object, const uint16_t *const palette_map,
     const int32_t tex_info_base)
 {
-    for (int32_t i = 0; i < object->nmeshes; i++) {
+    for (int32_t i = 0; i < object->mesh_count; i++) {
         OBJECT_MESH *const mesh = Object_GetMesh(object->mesh_idx + i);
         for (int32_t j = 0; j < mesh->num_tex_face4s; j++) {
             mesh->tex_face4s[j].texture += tex_info_base;

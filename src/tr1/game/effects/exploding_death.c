@@ -54,7 +54,7 @@ int32_t Effect_ExplodingDeath(
         item->mesh_bits -= bit;
     }
 
-    for (int i = 1; i < object->nmeshes; i++) {
+    for (int i = 1; i < object->mesh_count; i++) {
         if (bone->flags & BF_MATRIX_POP) {
             Matrix_Pop();
         }
@@ -110,5 +110,5 @@ int32_t Effect_ExplodingDeath(
 
     Matrix_Pop();
 
-    return !(item->mesh_bits & (0x7FFFFFFF >> (31 - object->nmeshes)));
+    return !(item->mesh_bits & (0x7FFFFFFF >> (31 - object->mesh_count)));
 }

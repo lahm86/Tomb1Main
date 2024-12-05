@@ -35,7 +35,7 @@ typedef struct __PACKING {
 } OBJECT_BOUNDS;
 
 typedef struct __PACKING {
-    int16_t nmeshes;
+    int16_t mesh_count;
     int16_t mesh_idx;
     int32_t bone_idx;
     FRAME_INFO *frame_base;

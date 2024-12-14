@@ -114,6 +114,7 @@
 #define FOLLOW_CENTRE 1
 #define NO_CHUNKY 2
 #define CHASE_OBJECT 3
+#define CAM_LOCKED 4
 #define LOOK_SPEED 4
 #define COMBAT_SPEED 8
 #define CHASE_SPEED 12

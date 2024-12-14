@@ -841,7 +841,12 @@ static void M_TestSectorTrigger(
                 g_Camera.fixed[g_Camera.number].flags |= IF_ONE_SHOT;
             }
 
-            g_Camera.speed = cam_data->glide + 1;
+            if (cam_data->glide != 0xF8) {
+                g_Camera.speed = cam_data->glide + 1;
+            } else {
+                g_Camera.fixed[g_Camera.number].flags |= 1;
+                g_Camera.speed = 1;
+            }
             g_Camera.type = is_heavy ? CAM_HEAVY : CAM_FIXED;
             break;
         }

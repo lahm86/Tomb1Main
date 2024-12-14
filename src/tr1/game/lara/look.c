@@ -1,6 +1,7 @@
 #include "game/lara/look.h"
 
 #include "config.h"
+#include "game/camera.h"
 #include "game/input.h"
 #include "global/const.h"
 #include "global/types.h"
@@ -14,7 +15,9 @@ static void M_UpDownBase(
 
 static void M_LeftRightBase(int16_t max_head_rot, int16_t head_turn)
 {
-    g_Camera.type = CAM_LOOK;
+    if (!Camera_SetType(CAM_LOOK)) {
+        return;
+    }
     if (g_Input.left) {
         g_Input.left = 0;
         if (g_Lara.head_rot.y > -max_head_rot) {
@@ -34,13 +37,16 @@ static void M_LeftRightBase(int16_t max_head_rot, int16_t head_turn)
 static void M_UpDownBase(
     int16_t min_head_tilt, int16_t max_head_tilt, int16_t head_turn)
 {
+    if (!Camera_SetType(CAM_LOOK)) {
+        return;
+    }
+
     if (g_Config.enabled_inverted_look) {
         uint16_t temp_forward = g_Input.forward;
         g_Input.forward = g_Input.back;
         g_Input.back = temp_forward;
     }
 
-    g_Camera.type = CAM_LOOK;
     if (g_Input.forward) {
         g_Input.forward = 0;
         if (g_Lara.head_rot.x > min_head_tilt) {

@@ -1,5 +1,6 @@
 #include "game/gun.h"
 
+#include "game/camera.h"
 #include "game/gun/gun_misc.h"
 #include "game/gun/gun_pistols.h"
 #include "game/gun/gun_rifle.h"
@@ -96,16 +97,12 @@ void Gun_Control(void)
         case LGT_PISTOLS:
         case LGT_MAGNUMS:
         case LGT_UZIS:
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Pistols_Draw(g_Lara.gun_type);
             break;
 
         case LGT_SHOTGUN:
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Rifle_Draw(g_Lara.gun_type);
             break;
 
@@ -141,9 +138,7 @@ void Gun_Control(void)
             if (g_Lara.pistols.ammo && g_Input.action) {
                 Lara_SwapSingleMesh(LM_HEAD, O_UZI_ANIM);
             }
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Pistols_Control(g_Lara.gun_type);
             break;
 
@@ -151,9 +146,7 @@ void Gun_Control(void)
             if (g_Lara.magnums.ammo && g_Input.action) {
                 Lara_SwapSingleMesh(LM_HEAD, O_UZI_ANIM);
             }
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Pistols_Control(g_Lara.gun_type);
             break;
 
@@ -161,9 +154,7 @@ void Gun_Control(void)
             if (g_Lara.uzis.ammo && g_Input.action) {
                 Lara_SwapSingleMesh(LM_HEAD, O_UZI_ANIM);
             }
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Pistols_Control(g_Lara.gun_type);
             break;
 
@@ -171,9 +162,7 @@ void Gun_Control(void)
             if (g_Lara.shotgun.ammo && g_Input.action) {
                 Lara_SwapSingleMesh(LM_HEAD, O_UZI_ANIM);
             }
-            if (g_Camera.type != CAM_CINEMATIC && g_Camera.type != CAM_LOOK) {
-                g_Camera.type = CAM_COMBAT;
-            }
+            Camera_SetType(CAM_COMBAT);
             Gun_Rifle_Control(g_Lara.gun_type);
             break;
 

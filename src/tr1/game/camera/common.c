@@ -610,6 +610,22 @@ void Camera_Initialise(void)
     Camera_Update();
 }
 
+bool Camera_SetType(const CAMERA_TYPE type)
+{
+    if ((type == CAM_COMBAT || type == CAM_LOOK) && g_Camera.last != NO_CAMERA
+        && (g_Camera.fixed[g_Camera.last].flags & 1)) {
+        return false;
+    }
+
+    if (type == CAM_COMBAT
+        && (g_Camera.type == CAM_CINEMATIC || g_Camera.type == CAM_LOOK)) {
+        return false;
+    }
+
+    g_Camera.type = type;
+    return true;
+}
+
 void Camera_Reset(void)
 {
     g_Camera.pos.room_num = NO_ROOM;

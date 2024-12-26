@@ -478,6 +478,7 @@ static void M_DrawPickupsSprites(void)
         MIN(Viewport_GetWidth(), Viewport_GetHeight() * 320 / 200) / 10;
     const int32_t sprite_width = sprite_height * 4 / 3;
 
+    Output_SetupAboveWater(false);
     for (int i = 0; i < MAX_PICKUPS; i++) {
         DISPLAY_PICKUP *const pu = &m_Pickups[i];
         if (pu->phase == DPP_DEAD) {

@@ -131,6 +131,7 @@ typedef struct {
         float anisotropy_filter;
         bool pretty_pixels;
         bool enable_reflections;
+        bool enable_uw_sprite_tint;
     } rendering;
 
     struct {

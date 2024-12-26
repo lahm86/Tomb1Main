@@ -23,5 +23,6 @@ void Console_DrawBackdrop(void)
     RGBA_8888 top = { 0, 0, 0, 0 };
     RGBA_8888 bottom = { 0, 0, 0, 196 };
 
+    Output_SetupAboveWater(false);
     Output_DrawScreenGradientQuad(sx, sy, sw, sh, top, top, bottom, bottom);
 }

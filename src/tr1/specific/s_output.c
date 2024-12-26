@@ -575,6 +575,10 @@ void S_Output_DrawSprite(
     vertices[3].g = vshade;
     vertices[3].b = vshade;
 
+    for (int32_t i = 0; i < 4; i++) {
+        Output_ApplySpriteTint(&vertices[i].r, &vertices[i].g, &vertices[i].b);
+    }
+
     if (x1 < 0 || y1 < 0 || x2 > Viewport_GetWidth()
         || y2 > Viewport_GetHeight()) {
         vertex_count = M_ClipVertices(

@@ -1371,6 +1371,13 @@ void Output_ApplyTint(float *r, float *g, float *b)
     }
 }
 
+void Output_ApplySpriteTint(float *const r, float *const g, float *const b)
+{
+    if (g_Config.rendering.enable_uw_sprite_tint) {
+        Output_ApplyTint(r, g, b);
+    }
+}
+
 bool Output_MakeScreenshot(const char *const path)
 {
     GFX_Context_ScheduleScreenshot(path);

@@ -321,6 +321,10 @@
       "Title": "Braid",
       "Description": "Enables Lara's braid."
     },
+    "enable_mesh_tint": {
+      "Title": "Responsive underwater mesh tint",
+      "Description": "Enables underwater tints to be drawn on Lara's meshes based on water height per mesh."
+    },
     "enable_3d_pickups": {
       "Title": "3D pickups",
       "Description": "Enables 3D models to be rendered in place of the sprites for pickup items."

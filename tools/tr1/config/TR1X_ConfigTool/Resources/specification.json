@@ -432,6 +432,11 @@
           "DefaultValue": true
         },
         {
+          "Field": "enable_mesh_tint",
+          "DataType": "Bool",
+          "DefaultValue": true
+        },
+        {
           "Field": "enable_3d_pickups",
           "DataType": "Bool",
           "DefaultValue": true

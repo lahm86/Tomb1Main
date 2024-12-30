@@ -23,6 +23,7 @@
 #include "global/const.h"
 #include "global/vars.h"
 #include "math/math.h"
+#include "math/matrix.h"
 
 #include <libtrx/log.h>
 #include <libtrx/utils.h>
@@ -36,6 +37,516 @@
 #define LARA_UW_DAMAGE 5
 
 static int16_t m_DeathCameraTarget = NO_ITEM;
+
+static void M_CacheMeshWaterStatus(LARA_MESH mesh);
+static void M_CalculateWaterStatus_I(
+    const FRAME_INFO *frame_1, const FRAME_INFO *frame_2, int32_t frac,
+    int32_t rate);
+static void M_CalculateWaterStatus(void);
+
+static void M_CacheMeshWaterStatus(const LARA_MESH mesh)
+{
+    const XYZ_32 pos = {
+        .x = g_LaraItem->pos.x + (g_MatrixPtr->_03 >> W2V_SHIFT),
+        .y = g_LaraItem->pos.y + (g_MatrixPtr->_13 >> W2V_SHIFT),
+        .z = g_LaraItem->pos.z + (g_MatrixPtr->_23 >> W2V_SHIFT),
+    };
+    int16_t room_num = g_LaraItem->room_num;
+    Room_GetSector(pos.x, pos.y, pos.z, &room_num);
+    g_Lara.mesh_underwater[mesh] =
+        (Room_Get(room_num)->flags & RF_UNDERWATER) != 0;
+}
+
+static void M_CalculateWaterStatus_I(
+    const FRAME_INFO *const frame_1, const FRAME_INFO *const frame_2,
+    const int32_t frac, const int32_t rate)
+{
+    Matrix_PushUnit();
+    Matrix_TranslateSet(0, 0, 0);
+    Matrix_RotYXZ(g_LaraItem->rot.y, g_LaraItem->rot.x, g_LaraItem->rot.z);
+
+    const OBJECT *object = Object_GetObject(g_LaraItem->object_id);
+    const int32_t *bone = &g_AnimBones[object->bone_idx];
+    const int32_t *packed_rotation_1 = frame_1->mesh_rots;
+    const int32_t *packed_rotation_2 = frame_2->mesh_rots;
+    Matrix_InitInterpolate(frac, rate);
+
+    Matrix_TranslateRel_ID(
+        frame_1->offset.x, frame_1->offset.y, frame_1->offset.z,
+        frame_2->offset.x, frame_2->offset.y, frame_2->offset.z);
+
+    Matrix_RotYXZpack_I(packed_rotation_1[LM_HIPS], packed_rotation_2[LM_HIPS]);
+    M_CacheMeshWaterStatus(LM_HIPS);
+
+    Matrix_Push_I();
+
+    Matrix_TranslateRel_I(bone[1], bone[2], bone[3]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_THIGH_L], packed_rotation_2[LM_THIGH_L]);
+    M_CacheMeshWaterStatus(LM_THIGH_L);
+
+    Matrix_TranslateRel_I(bone[5], bone[6], bone[7]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_CALF_L], packed_rotation_1[LM_CALF_L]);
+    M_CacheMeshWaterStatus(LM_CALF_L);
+
+    Matrix_TranslateRel_I(bone[9], bone[10], bone[11]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_FOOT_L], packed_rotation_2[LM_FOOT_L]);
+    M_CacheMeshWaterStatus(LM_FOOT_L);
+
+    Matrix_Pop_I();
+
+    Matrix_Push_I();
+
+    Matrix_TranslateRel_I(bone[13], bone[14], bone[15]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_THIGH_R], packed_rotation_2[LM_THIGH_R]);
+    M_CacheMeshWaterStatus(LM_THIGH_R);
+
+    Matrix_TranslateRel_I(bone[17], bone[18], bone[19]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_CALF_R], packed_rotation_2[LM_CALF_R]);
+    M_CacheMeshWaterStatus(LM_CALF_R);
+
+    Matrix_TranslateRel_I(bone[21], bone[22], bone[23]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_FOOT_R], packed_rotation_2[LM_FOOT_R]);
+    M_CacheMeshWaterStatus(LM_FOOT_R);
+
+    Matrix_Pop_I();
+
+    Matrix_TranslateRel_I(bone[25], bone[26], bone[27]);
+    Matrix_RotYXZpack_I(
+        packed_rotation_1[LM_TORSO], packed_rotation_2[LM_TORSO]);
+    Matrix_RotYXZ_I(
+        g_Lara.interp.result.torso_rot.y, g_Lara.interp.result.torso_rot.x,
+        g_Lara.interp.result.torso_rot.z);
+    M_CacheMeshWaterStatus(LM_TORSO);
+
+    Matrix_Push_I();
+
+    Matrix_TranslateRel_I(bone[53], bone[54], bone[55]);
+    Matrix_RotYXZpack_I(packed_rotation_1[LM_HEAD], packed_rotation_2[LM_HEAD]);
+    Matrix_RotYXZ_I(
+        g_Lara.interp.result.head_rot.y, g_Lara.interp.result.head_rot.x,
+        g_Lara.interp.result.head_rot.z);
+    M_CacheMeshWaterStatus(LM_HEAD);
+
+    Matrix_Pop_I();
+
+    LARA_GUN_TYPE gun_type = LGT_UNARMED;
+    if (g_Lara.gun_status == LGS_READY || g_Lara.gun_status == LGS_DRAW
+        || g_Lara.gun_status == LGS_UNDRAW) {
+        gun_type = g_Lara.gun_type;
+    }
+
+    switch (gun_type) {
+    case LGT_UNARMED:
+    default:
+        Matrix_Push_I();
+
+        Matrix_TranslateRel_I(bone[29], bone[30], bone[31]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_UARM_R], packed_rotation_2[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel_I(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_LARM_R], packed_rotation_2[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel_I(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_HAND_R], packed_rotation_2[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop_I();
+
+        Matrix_Push_I();
+
+        Matrix_TranslateRel_I(bone[41], bone[42], bone[43]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_UARM_L], packed_rotation_2[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel_I(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_LARM_L], packed_rotation_2[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel_I(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_HAND_L], packed_rotation_2[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop_I();
+        break;
+
+    case LGT_PISTOLS:
+    case LGT_MAGNUMS:
+    case LGT_UZIS:
+        Matrix_Push_I();
+
+        Matrix_TranslateRel_I(bone[29], bone[30], bone[31]);
+        Matrix_InterpolateArm();
+
+        packed_rotation_1 =
+            g_Lara.right_arm.frame_base[g_Lara.right_arm.frame_num].mesh_rots;
+        Matrix_RotYXZ(
+            g_Lara.right_arm.interp.result.rot.y,
+            g_Lara.right_arm.interp.result.rot.x,
+            g_Lara.right_arm.interp.result.rot.z);
+        Matrix_RotYXZpack(packed_rotation_1[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack(packed_rotation_1[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack(packed_rotation_1[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop_I();
+
+        Matrix_Push_I();
+
+        Matrix_TranslateRel_I(bone[41], bone[42], bone[43]);
+        Matrix_InterpolateArm();
+
+        packed_rotation_1 =
+            g_Lara.left_arm.frame_base[g_Lara.left_arm.frame_num].mesh_rots;
+        Matrix_RotYXZ(
+            g_Lara.left_arm.interp.result.rot.y,
+            g_Lara.left_arm.interp.result.rot.x,
+            g_Lara.left_arm.interp.result.rot.z);
+        Matrix_RotYXZpack(packed_rotation_1[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack(packed_rotation_1[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack(packed_rotation_1[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop_I();
+        break;
+
+    case LGT_SHOTGUN:
+        Matrix_Push_I();
+
+        packed_rotation_1 =
+            g_Lara.right_arm.frame_base[g_Lara.right_arm.frame_num].mesh_rots;
+        packed_rotation_2 = packed_rotation_1;
+        Matrix_TranslateRel_I(bone[29], bone[30], bone[31]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_UARM_R], packed_rotation_2[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel_I(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_LARM_R], packed_rotation_2[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel_I(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_HAND_R], packed_rotation_2[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop_I();
+
+        Matrix_Push_I();
+
+        packed_rotation_1 =
+            g_Lara.left_arm.frame_base[g_Lara.left_arm.frame_num].mesh_rots;
+        packed_rotation_2 = packed_rotation_1;
+        Matrix_TranslateRel_I(bone[41], bone[42], bone[43]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_UARM_L], packed_rotation_2[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel_I(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_LARM_L], packed_rotation_2[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel_I(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack_I(
+            packed_rotation_1[LM_HAND_L], packed_rotation_2[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop_I();
+        break;
+    }
+
+    Matrix_Pop();
+}
+
+static void M_CalculateWaterStatus(void)
+{
+    if (!g_Config.visuals.enable_mesh_tint) {
+        const ROOM *const room = Room_Get(g_LaraItem->room_num);
+        const bool underwater = (room->flags & RF_UNDERWATER) != 0;
+        for (int32_t i = 0; i < LM_NUMBER_OF; i++) {
+            g_Lara.mesh_underwater[i] = underwater;
+        }
+
+        return;
+    }
+
+    const OBJECT *const object = Object_GetObject(g_LaraItem->object_id);
+    const FRAME_INFO *frame;
+    if (g_Lara.hit_direction < 0) {
+        FRAME_INFO *frmptr[2];
+        int32_t rate;
+        const int32_t frac = Item_GetFrames(g_LaraItem, frmptr, &rate);
+        if (frac) {
+            M_CalculateWaterStatus_I(frmptr[0], frmptr[1], frac, rate);
+            goto finish;
+        } else {
+            frame = frmptr[0];
+        }
+    } else {
+        switch (g_Lara.hit_direction) {
+        default:
+        case DIR_NORTH:
+            frame = g_Anims[object->anim_idx + LA_SPAZ_FORWARD].frame_ptr;
+            break;
+        case DIR_EAST:
+            frame = g_Anims[object->anim_idx + LA_SPAZ_RIGHT].frame_ptr;
+            break;
+        case DIR_SOUTH:
+            frame = g_Anims[object->anim_idx + LA_SPAZ_BACK].frame_ptr;
+            break;
+        case DIR_WEST:
+            frame = g_Anims[object->anim_idx + LA_SPAZ_LEFT].frame_ptr;
+            break;
+        }
+    }
+
+    Matrix_PushUnit();
+    Matrix_TranslateSet(0, 0, 0);
+    Matrix_RotYXZ(g_LaraItem->rot.y, g_LaraItem->rot.x, g_LaraItem->rot.z);
+
+    const int32_t *packed_rotation = frame->mesh_rots;
+    const int32_t *bone = &g_AnimBones[object->bone_idx];
+
+    Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
+    Matrix_RotYXZpack(packed_rotation[LM_HIPS]);
+    M_CacheMeshWaterStatus(LM_HIPS);
+
+    Matrix_Push();
+
+    Matrix_TranslateRel(bone[1], bone[2], bone[3]);
+    Matrix_RotYXZpack(packed_rotation[LM_THIGH_L]);
+    M_CacheMeshWaterStatus(LM_THIGH_L);
+
+    Matrix_TranslateRel(bone[5], bone[6], bone[7]);
+    Matrix_RotYXZpack(packed_rotation[LM_CALF_L]);
+    M_CacheMeshWaterStatus(LM_CALF_L);
+
+    Matrix_TranslateRel(bone[9], bone[10], bone[11]);
+    Matrix_RotYXZpack(packed_rotation[LM_FOOT_L]);
+    M_CacheMeshWaterStatus(LM_FOOT_L);
+
+    Matrix_Pop();
+
+    Matrix_Push();
+
+    Matrix_TranslateRel(bone[13], bone[14], bone[15]);
+    Matrix_RotYXZpack(packed_rotation[LM_THIGH_R]);
+    M_CacheMeshWaterStatus(LM_THIGH_R);
+
+    Matrix_TranslateRel(bone[17], bone[18], bone[19]);
+    Matrix_RotYXZpack(packed_rotation[LM_CALF_R]);
+    M_CacheMeshWaterStatus(LM_CALF_R);
+
+    Matrix_TranslateRel(bone[21], bone[22], bone[23]);
+    Matrix_RotYXZpack(packed_rotation[LM_FOOT_R]);
+    M_CacheMeshWaterStatus(LM_FOOT_R);
+
+    Matrix_Pop();
+
+    Matrix_TranslateRel(bone[25], bone[26], bone[27]);
+    Matrix_RotYXZpack(packed_rotation[LM_TORSO]);
+    Matrix_RotYXZ(
+        g_Lara.interp.result.torso_rot.y, g_Lara.interp.result.torso_rot.x,
+        g_Lara.interp.result.torso_rot.z);
+    M_CacheMeshWaterStatus(LM_TORSO);
+    Matrix_TranslateRel(0, bone[26], 0);
+
+    Matrix_Push();
+
+    Matrix_TranslateRel(bone[53], bone[54], bone[55]);
+    Matrix_RotYXZpack(packed_rotation[LM_HEAD]);
+    Matrix_RotYXZ(
+        g_Lara.interp.result.head_rot.y, g_Lara.interp.result.head_rot.x,
+        g_Lara.interp.result.head_rot.z);
+    M_CacheMeshWaterStatus(LM_HEAD);
+
+    Matrix_Pop();
+
+    LARA_GUN_TYPE gun_type = LGT_UNARMED;
+    if (g_Lara.gun_status == LGS_READY || g_Lara.gun_status == LGS_DRAW
+        || g_Lara.gun_status == LGS_UNDRAW) {
+        gun_type = g_Lara.gun_type;
+    }
+
+    switch (gun_type) {
+    case LGT_UNARMED:
+    default:
+        Matrix_Push();
+
+        Matrix_TranslateRel(bone[29], bone[30], bone[31]);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop();
+
+        Matrix_Push();
+
+        Matrix_TranslateRel(bone[41], bone[42], bone[43]);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop();
+        break;
+
+    case LGT_PISTOLS:
+    case LGT_MAGNUMS:
+    case LGT_UZIS:
+        Matrix_Push();
+
+        Matrix_TranslateRel(bone[29], bone[30], bone[31]);
+
+        g_MatrixPtr->_00 = g_MatrixPtr[-2]._00;
+        g_MatrixPtr->_01 = g_MatrixPtr[-2]._01;
+        g_MatrixPtr->_02 = g_MatrixPtr[-2]._02;
+        g_MatrixPtr->_10 = g_MatrixPtr[-2]._10;
+        g_MatrixPtr->_11 = g_MatrixPtr[-2]._11;
+        g_MatrixPtr->_12 = g_MatrixPtr[-2]._12;
+        g_MatrixPtr->_20 = g_MatrixPtr[-2]._20;
+        g_MatrixPtr->_21 = g_MatrixPtr[-2]._21;
+        g_MatrixPtr->_22 = g_MatrixPtr[-2]._22;
+
+        packed_rotation =
+            g_Lara.right_arm.frame_base[g_Lara.right_arm.frame_num].mesh_rots;
+        Matrix_RotYXZ(
+            g_Lara.right_arm.interp.result.rot.y,
+            g_Lara.right_arm.interp.result.rot.x,
+            g_Lara.right_arm.interp.result.rot.z);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop();
+
+        Matrix_Push();
+
+        Matrix_TranslateRel(bone[41], bone[42], bone[43]);
+
+        g_MatrixPtr->_00 = g_MatrixPtr[-2]._00;
+        g_MatrixPtr->_01 = g_MatrixPtr[-2]._01;
+        g_MatrixPtr->_02 = g_MatrixPtr[-2]._02;
+        g_MatrixPtr->_10 = g_MatrixPtr[-2]._10;
+        g_MatrixPtr->_11 = g_MatrixPtr[-2]._11;
+        g_MatrixPtr->_12 = g_MatrixPtr[-2]._12;
+        g_MatrixPtr->_20 = g_MatrixPtr[-2]._20;
+        g_MatrixPtr->_21 = g_MatrixPtr[-2]._21;
+        g_MatrixPtr->_22 = g_MatrixPtr[-2]._22;
+
+        packed_rotation =
+            g_Lara.left_arm.frame_base[g_Lara.left_arm.frame_num].mesh_rots;
+        Matrix_RotYXZ(
+            g_Lara.left_arm.interp.result.rot.y,
+            g_Lara.left_arm.interp.result.rot.x,
+            g_Lara.left_arm.interp.result.rot.z);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop();
+        break;
+
+    case LGT_SHOTGUN:
+        Matrix_Push();
+
+        packed_rotation =
+            g_Lara.right_arm.frame_base[g_Lara.right_arm.frame_num].mesh_rots;
+        Matrix_TranslateRel(bone[29], bone[30], bone[31]);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_R]);
+        M_CacheMeshWaterStatus(LM_UARM_R);
+
+        Matrix_TranslateRel(bone[33], bone[34], bone[35]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_R]);
+        M_CacheMeshWaterStatus(LM_LARM_R);
+
+        Matrix_TranslateRel(bone[37], bone[38], bone[39]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_R]);
+        M_CacheMeshWaterStatus(LM_HAND_R);
+
+        Matrix_Pop();
+
+        Matrix_Push();
+
+        packed_rotation =
+            g_Lara.left_arm.frame_base[g_Lara.left_arm.frame_num].mesh_rots;
+        Matrix_TranslateRel(bone[41], bone[42], bone[43]);
+        Matrix_RotYXZpack(packed_rotation[LM_UARM_L]);
+        M_CacheMeshWaterStatus(LM_UARM_L);
+
+        Matrix_TranslateRel(bone[45], bone[46], bone[47]);
+        Matrix_RotYXZpack(packed_rotation[LM_LARM_L]);
+        M_CacheMeshWaterStatus(LM_LARM_L);
+
+        Matrix_TranslateRel(bone[49], bone[50], bone[51]);
+        Matrix_RotYXZpack(packed_rotation[LM_HAND_L]);
+        M_CacheMeshWaterStatus(LM_HAND_L);
+
+        Matrix_Pop();
+        break;
+    }
+
+    Matrix_Pop();
+
+finish:
+    // Torso looks strange if tinted and upper arms are not...
+    g_Lara.mesh_underwater[LM_TORSO] =
+        g_Lara.mesh_underwater[LM_UARM_L] || g_Lara.mesh_underwater[LM_UARM_R];
+}
 
 LARA_INFO *Lara_GetLaraInfo(void)
 {
@@ -328,6 +839,8 @@ void Lara_Control(void)
     default:
         break;
     }
+
+    M_CalculateWaterStatus();
 }
 
 void Lara_SwapMeshExtra(void)

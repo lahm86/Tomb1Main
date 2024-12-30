@@ -27,12 +27,6 @@ void Game_DrawScene(bool draw_overlay)
             Output_FillEnvironmentMap();
         }
 
-        if (g_RoomInfo[g_LaraItem->room_num].flags & RF_UNDERWATER) {
-            Output_SetupBelowWater(g_Camera.underwater);
-        } else {
-            Output_SetupAboveWater(g_Camera.underwater);
-        }
-
         Lara_Draw(g_LaraItem);
         Output_FlushTranslucentObjects();
 

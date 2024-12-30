@@ -14,6 +14,12 @@ static void M_DrawMesh(LARA_MESH mesh_idx, int32_t clip, bool interpolated);
 static void M_DrawMesh(
     const LARA_MESH mesh_idx, const int32_t clip, const bool interpolated)
 {
+    if (g_Lara.mesh_underwater[mesh_idx]) {
+        Output_SetupBelowWater(g_Camera.underwater);
+    } else {
+        Output_SetupAboveWater(g_Camera.underwater);
+    }
+
     const OBJECT_MESH *const mesh = Lara_GetMesh(mesh_idx);
     if (interpolated) {
         Output_DrawObjectMesh_I(mesh, clip);

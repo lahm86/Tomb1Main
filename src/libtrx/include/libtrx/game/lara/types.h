@@ -38,6 +38,7 @@ typedef struct __PACKING {
     LARA_GUN_TYPE back_gun_type;
     int16_t calc_fall_speed;
     LARA_WATER_STATE water_status;
+    bool mesh_underwater[LM_NUMBER_OF];
     int16_t pose_count;
     int16_t hit_frame;
     int16_t hit_direction;

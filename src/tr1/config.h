@@ -108,6 +108,10 @@ typedef struct {
     } gameplay;
 
     struct {
+        bool enable_mesh_tint;
+    } visuals;
+
+    struct {
         int32_t layout;
         int32_t cntlr_layout;
     } input;

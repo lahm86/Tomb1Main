@@ -17,6 +17,7 @@ typedef struct {
     } input;
 
     struct {
+        bool enable_mesh_tint;
         bool enable_3d_pickups;
         bool enable_fade_effects;
         bool fix_item_rots;

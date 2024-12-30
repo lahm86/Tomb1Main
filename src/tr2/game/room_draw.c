@@ -529,11 +529,6 @@ void Room_DrawAllRooms(const int16_t current_room)
     }
 
     if (g_Objects[O_LARA].loaded && !(g_LaraItem->flags & IF_ONE_SHOT)) {
-        if (g_Rooms[g_LaraItem->room_num].flags & RF_UNDERWATER) {
-            Output_SetupBelowWater(g_CameraUnderwater);
-        } else {
-            Output_SetupAboveWater(g_CameraUnderwater);
-        }
         g_MidSort = g_Rooms[g_LaraItem->room_num].bound_active >> 8;
         if (g_MidSort) {
             g_MidSort--;

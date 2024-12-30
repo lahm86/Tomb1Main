@@ -104,6 +104,7 @@ typedef struct __PACKING {
     int16_t last_gun_type;
     int16_t calc_fall_speed;
     int16_t water_status;
+    bool mesh_underwater[LM_NUMBER_OF];
     int16_t climb_status;
     int16_t pose_count;
     int16_t hit_frame;

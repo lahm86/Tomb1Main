@@ -63,6 +63,7 @@ game with new enhancements and features.
     - **Temple of Xian**: fixed missing death tiles in room 91
     - **Floating Islands**: fixed door 72's position to resolve the invisible wall in front of it
 - improved the animation of Lara's braid
+- improved Lara's individual mesh tinting when in shallow water
 
 #### Cheats
 - added a fly cheat

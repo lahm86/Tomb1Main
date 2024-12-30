@@ -8,6 +8,17 @@
 #include "game/random.h"
 #include "global/vars.h"
 
+static void M_PrepareOutput(LARA_MESH mesh_idx);
+
+static void M_PrepareOutput(const LARA_MESH mesh_idx)
+{
+    if (g_Lara.mesh_underwater[mesh_idx]) {
+        Output_SetupBelowWater(g_CameraUnderwater);
+    } else {
+        Output_SetupAboveWater(g_CameraUnderwater);
+    }
+}
+
 void Lara_Draw(const ITEM *const item)
 {
     FRAME_INFO *frame;
@@ -75,33 +86,40 @@ void Lara_Draw(const ITEM *const item)
 
     Matrix_TranslateRel(frame->offset.x, frame->offset.y, frame->offset.z);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_HIPS);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HIPS], clip);
 
     Matrix_Push();
     Matrix_TranslateRel(bone[1], bone[2], bone[3]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_THIGH_L);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_THIGH_L], clip);
 
     Matrix_TranslateRel(bone[5], bone[6], bone[7]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_CALF_L);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_CALF_L], clip);
 
     Matrix_TranslateRel(bone[9], bone[10], bone[11]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_FOOT_L);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_FOOT_L], clip);
     Matrix_Pop();
 
     Matrix_Push();
     Matrix_TranslateRel(bone[13], bone[14], bone[15]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_THIGH_R);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_THIGH_R], clip);
 
     Matrix_TranslateRel(bone[17], bone[18], bone[19]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_CALF_R);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_CALF_R], clip);
 
     Matrix_TranslateRel(bone[21], bone[22], bone[23]);
     Matrix_RotYXZsuperpack(&mesh_rots, 0);
+    M_PrepareOutput(LM_FOOT_R);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_FOOT_R], clip);
     Matrix_Pop();
 
@@ -121,6 +139,7 @@ void Lara_Draw(const ITEM *const item)
     }
 
     Matrix_RotYXZ(g_Lara.torso_y_rot, g_Lara.torso_x_rot, g_Lara.torso_z_rot);
+    M_PrepareOutput(LM_TORSO);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_TORSO], clip);
 
     Matrix_Push();
@@ -129,6 +148,7 @@ void Lara_Draw(const ITEM *const item)
     Matrix_RotYXZsuperpack(&mesh_rots, 6);
     mesh_rots = mesh_rots_c;
     Matrix_RotYXZ(g_Lara.head_y_rot, g_Lara.head_x_rot, g_Lara.head_z_rot);
+    M_PrepareOutput(LM_HEAD);
     Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HEAD], clip);
 
     *g_MatrixPtr = saved_matrix;
@@ -160,14 +180,17 @@ void Lara_Draw(const ITEM *const item)
         Matrix_Push();
         Matrix_TranslateRel(bone[29], bone[30], bone[31]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_R], clip);
         Matrix_Pop();
 
@@ -184,12 +207,15 @@ void Lara_Draw(const ITEM *const item)
         } else {
             Matrix_RotYXZsuperpack(&mesh_rots, 0);
         }
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_L], clip);
         Matrix_TranslateRel(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_L], clip);
         Matrix_TranslateRel(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_L], clip);
         if (g_Lara.gun_type == LGT_FLARE && g_Lara.left_arm.flash_gun) {
             Gun_DrawFlash(LGT_FLARE, clip);
@@ -224,14 +250,17 @@ void Lara_Draw(const ITEM *const item)
                          - g_Anims[g_Lara.right_arm.anim_num].frame_base)
                   + FBBOX_ROT];
         Matrix_RotYXZsuperpack(&mesh_rots, 8);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_R], clip);
 
         if (g_Lara.right_arm.flash_gun) {
@@ -259,14 +288,17 @@ void Lara_Draw(const ITEM *const item)
                                  - g_Anims[g_Lara.left_arm.anim_num].frame_base)
                           + FBBOX_ROT];
         Matrix_RotYXZsuperpack(&mesh_rots, 11);
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_L], clip);
 
         Matrix_TranslateRel(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_L], clip);
 
         Matrix_TranslateRel(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_L], clip);
 
         if (g_Lara.left_arm.flash_gun) {
@@ -292,14 +324,17 @@ void Lara_Draw(const ITEM *const item)
                       * (g_Anims[g_Lara.right_arm.anim_num].interpolation >> 8)
                   + FBBOX_ROT];
         Matrix_RotYXZsuperpack(&mesh_rots, 8);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_R], clip);
 
         if (g_Lara.right_arm.flash_gun) {
@@ -310,14 +345,17 @@ void Lara_Draw(const ITEM *const item)
         Matrix_Push();
         Matrix_TranslateRel(bone[41], bone[42], bone[43]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_L], clip);
 
         Matrix_TranslateRel(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_L], clip);
 
         Matrix_TranslateRel(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack(&mesh_rots, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_L], clip);
 
         if (g_Lara.right_arm.flash_gun) {
@@ -380,33 +418,40 @@ void Lara_Draw_I(
         frame1->offset.x, frame1->offset.y, frame1->offset.z, frame2->offset.x,
         frame2->offset.y, frame2->offset.z);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_HIPS);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HIPS], clip);
 
     Matrix_Push_I();
     Matrix_TranslateRel_I(bone[1], bone[2], bone[3]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_THIGH_L);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_THIGH_L], clip);
 
     Matrix_TranslateRel_I(bone[5], bone[6], bone[7]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_CALF_L);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_CALF_L], clip);
 
     Matrix_TranslateRel_I(bone[9], bone[10], bone[11]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_FOOT_L);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_FOOT_L], clip);
     Matrix_Pop_I();
 
     Matrix_Push_I();
     Matrix_TranslateRel_I(bone[13], bone[14], bone[15]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_THIGH_R);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_THIGH_R], clip);
 
     Matrix_TranslateRel_I(bone[17], bone[18], bone[19]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_CALF_R);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_CALF_R], clip);
 
     Matrix_TranslateRel_I(bone[21], bone[22], bone[23]);
     Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+    M_PrepareOutput(LM_FOOT_R);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_FOOT_R], clip);
     Matrix_Pop_I();
 
@@ -426,6 +471,7 @@ void Lara_Draw_I(
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
     }
     Matrix_RotYXZ_I(g_Lara.torso_y_rot, g_Lara.torso_x_rot, g_Lara.torso_z_rot);
+    M_PrepareOutput(LM_TORSO);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_TORSO], clip);
 
     Matrix_Push_I();
@@ -436,6 +482,7 @@ void Lara_Draw_I(
     mesh_rots_1 = mesh_rots_1_c;
     mesh_rots_2 = mesh_rots_2_c;
     Matrix_RotYXZ_I(g_Lara.head_y_rot, g_Lara.head_x_rot, g_Lara.head_z_rot);
+    M_PrepareOutput(LM_HEAD);
     Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HEAD], clip);
 
     *g_MatrixPtr = saved_matrix;
@@ -467,14 +514,17 @@ void Lara_Draw_I(
         Matrix_Push_I();
         Matrix_TranslateRel_I(bone[29], bone[30], bone[31]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel_I(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel_I(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HAND_R], clip);
         Matrix_Pop_I();
 
@@ -498,14 +548,17 @@ void Lara_Draw_I(
         } else {
             Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
         }
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_UARM_L], clip);
 
         Matrix_TranslateRel_I(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_LARM_L], clip);
 
         Matrix_TranslateRel_I(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HAND_L], clip);
 
         if (g_Lara.gun_type == LGT_FLARE && g_Lara.left_arm.flash_gun) {
@@ -535,14 +588,17 @@ void Lara_Draw_I(
                          - g_Anims[g_Lara.right_arm.anim_num].frame_base)
                   + FBBOX_ROT];
         Matrix_RotYXZsuperpack(&mesh_rots_1, 8);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack(&mesh_rots_1, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack(&mesh_rots_1, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_R], clip);
 
         if (g_Lara.right_arm.flash_gun) {
@@ -563,14 +619,17 @@ void Lara_Draw_I(
                          - g_Anims[g_Lara.left_arm.anim_num].frame_base)
                   + FBBOX_ROT];
         Matrix_RotYXZsuperpack(&mesh_rots_1, 11);
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_UARM_L], clip);
 
         Matrix_TranslateRel(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack(&mesh_rots_1, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_LARM_L], clip);
 
         Matrix_TranslateRel(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack(&mesh_rots_1, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons(g_Lara.mesh_ptrs[LM_HAND_L], clip);
 
         if (g_Lara.left_arm.flash_gun) {
@@ -601,14 +660,17 @@ void Lara_Draw_I(
                       * (g_Anims[g_Lara.right_arm.anim_num].interpolation >> 8)
                   + FBBOX_ROT];
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 8);
+        M_PrepareOutput(LM_UARM_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_UARM_R], clip);
 
         Matrix_TranslateRel_I(bone[33], bone[34], bone[35]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_LARM_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_LARM_R], clip);
 
         Matrix_TranslateRel_I(bone[37], bone[38], bone[39]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_HAND_R);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HAND_R], clip);
 
         if (g_Lara.right_arm.flash_gun) {
@@ -619,14 +681,17 @@ void Lara_Draw_I(
         Matrix_Push_I();
         Matrix_TranslateRel_I(bone[41], bone[42], bone[43]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_UARM_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_UARM_L], clip);
 
         Matrix_TranslateRel_I(bone[45], bone[46], bone[47]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_LARM_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_LARM_L], clip);
 
         Matrix_TranslateRel_I(bone[49], bone[50], bone[51]);
         Matrix_RotYXZsuperpack_I(&mesh_rots_1, &mesh_rots_2, 0);
+        M_PrepareOutput(LM_HAND_L);
         Output_InsertPolygons_I(g_Lara.mesh_ptrs[LM_HAND_L], clip);
 
         if (g_Lara.right_arm.flash_gun) {

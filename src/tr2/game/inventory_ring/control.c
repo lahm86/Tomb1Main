@@ -33,6 +33,7 @@
 #define OPTION_RING_OBJECTS 3
 
 static int32_t m_NoInputCounter = 0;
+static bool m_GymLaunched = false;
 
 static void M_ShowAmmoQuantity(const char *fmt, int32_t qty);
 
@@ -631,7 +632,7 @@ INV_RING *InvRing_Open(const INVENTORY_MODE mode)
     }
 
     g_InvRing_Source[RT_OPTION].current = 0;
-    if (g_GymInvOpenEnabled && mode == INV_TITLE_MODE
+    if (!m_GymLaunched && g_GymInvOpenEnabled && mode == INV_TITLE_MODE
         && !g_GameFlow.load_save_disabled && g_GameFlow.gym_enabled) {
         for (int32_t i = 0; i < g_InvRing_Source[RT_OPTION].count; i++) {
             if (g_InvRing_Source[RT_OPTION].items[i]->object_id
@@ -812,6 +813,7 @@ GAME_FLOW_COMMAND InvRing_Close(INV_RING *const ring)
 
         case O_PHOTO_OPTION:
             if (g_GameFlow.gym_enabled) {
+                m_GymLaunched = true;
                 gf_cmd = (GAME_FLOW_COMMAND) {
                     .action = GF_START_GAME,
                     .param = LV_GYM,

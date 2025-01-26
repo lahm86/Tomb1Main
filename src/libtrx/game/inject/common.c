@@ -10,7 +10,6 @@
 
 static int32_t m_NumInjections = 0;
 static INJECTION *m_Injections = NULL;
-static INJECTION_INTERFACE *m_Interface = NULL;
 
 static int32_t m_DataCounts[IDT_NUMBER_OF] = {};
 static int32_t m_RoomMetaCount = 0;
@@ -49,7 +48,7 @@ static void M_LoadFromFile(
         return;
     }
 
-    injection->relevant = m_Interface->is_relevant(injection);
+    injection->relevant = Inject_IsRelevant(injection);
     if (!injection->relevant) {
         return;
     }
@@ -117,22 +116,18 @@ static void M_InitialiseBlock(VFILE *const file)
     VFile_Skip(file, data_size);
 }
 
-void Inject_Init(const INJECTION_ARGS *const args)
+void Inject_InitLevel(const GAME_FLOW_LEVEL *const level)
 {
-    m_NumInjections = args->num_files;
+    m_NumInjections = level->injections.count;
     if (m_NumInjections == 0) {
         return;
     }
 
     BENCHMARK *const benchmark = Benchmark_Start();
 
-    m_Interface = Memory_Alloc(sizeof(INJECTION_INTERFACE));
-    memcpy(m_Interface, &args->interface, sizeof(INJECTION_INTERFACE));
-
     m_Injections = Memory_Alloc(sizeof(INJECTION) * m_NumInjections);
-
     for (int32_t i = 0; i < m_NumInjections; i++) {
-        M_LoadFromFile(&m_Injections[i], args->files[i]);
+        M_LoadFromFile(&m_Injections[i], level->injections.data_paths[i]);
     }
 
     Benchmark_End(benchmark, NULL);
@@ -198,15 +193,10 @@ void Inject_Cleanup(void)
         m_DataCounts[i] = 0;
     }
 
-    Memory_FreePointer(&m_Interface);
     Memory_FreePointer(&m_Injections);
     Memory_FreePointer(&m_RoomMeta);
-
     m_NumInjections = 0;
     m_RoomMetaCount = 0;
-    m_Injections = NULL;
-    m_RoomMeta = NULL;
-    m_Interface = NULL;
 
     Benchmark_End(benchmark, NULL);
 }
@@ -238,4 +228,9 @@ INJECTION_MESH_META Inject_GetRoomMeshMeta(const int32_t room_index)
     }
 
     return summed_meta;
+}
+
+int32_t Inject_GetDataCount(const INJECTION_DATA_TYPE type)
+{
+    return m_DataCounts[type];
 }

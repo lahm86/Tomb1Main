@@ -6,7 +6,6 @@
 #include "game/effects.h"
 #include "game/game.h"
 #include "game/game_flow.h"
-#include "game/inject.h"
 #include "game/items.h"
 #include "game/lara/control.h"
 #include "game/lot.h"
@@ -27,6 +26,7 @@
 #include <libtrx/filesystem.h>
 #include <libtrx/game/game_buf.h>
 #include <libtrx/game/game_string_table.h>
+#include <libtrx/game/inject.h>
 #include <libtrx/game/level.h>
 #include <libtrx/log.h>
 #include <libtrx/memory.h>
@@ -768,7 +768,7 @@ bool Level_Load(const GAME_FLOW_LEVEL *const level)
         Object_GetStaticObject3D(i)->loaded = false;
     }
 
-    Inject_Init(level->injections.count, level->injections.data_paths);
+    Inject_InitLevel(level);
 
     M_LoadFromFile(level);
     M_CompleteSetup();

@@ -4,7 +4,6 @@
 #include "game/carrier.h"
 #include "game/effects.h"
 #include "game/game_flow.h"
-#include "game/inject.h"
 #include "game/inventory_ring/vars.h"
 #include "game/items.h"
 #include "game/lara/common.h"
@@ -29,6 +28,7 @@
 #include <libtrx/debug.h>
 #include <libtrx/game/game_buf.h>
 #include <libtrx/game/game_string_table.h>
+#include <libtrx/game/inject.h>
 #include <libtrx/game/level.h>
 #include <libtrx/log.h>
 #include <libtrx/memory.h>
@@ -46,7 +46,6 @@ typedef enum {
 } LEVEL_LAYOUT;
 
 static LEVEL_INFO m_LevelInfo = {};
-static INJECTION_INFO *m_InjectionInfo = NULL;
 
 static bool M_TryLayout(VFILE *file, LEVEL_LAYOUT layout);
 static LEVEL_LAYOUT M_GuessLayout(VFILE *file);
@@ -403,8 +402,8 @@ static void M_LoadObjectMeshes(VFILE *const file)
     const size_t end_pos = VFile_GetPos(file);
     VFile_SetPos(file, data_start_pos);
 
-    Object_InitialiseMeshes(
-        m_LevelInfo.mesh_ptr_count + m_InjectionInfo->mesh_ptr_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_MESH_POINTERS);
+    Object_InitialiseMeshes(m_LevelInfo.mesh_ptr_count + inj_count);
     Level_ReadObjectMeshes(m_LevelInfo.mesh_ptr_count, mesh_indices, file);
 
     VFile_SetPos(file, end_pos);
@@ -418,7 +417,8 @@ static void M_LoadAnims(VFILE *file)
     BENCHMARK *const benchmark = Benchmark_Start();
     m_LevelInfo.anim_count = VFile_ReadS32(file);
     LOG_INFO("%d anims", m_LevelInfo.anim_count);
-    Anim_InitialiseAnims(m_LevelInfo.anim_count + m_InjectionInfo->anim_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIMS);
+    Anim_InitialiseAnims(m_LevelInfo.anim_count + inj_count);
     Level_ReadAnims(0, m_LevelInfo.anim_count, file);
     Benchmark_End(benchmark, NULL);
 }
@@ -428,8 +428,8 @@ static void M_LoadAnimChanges(VFILE *file)
     BENCHMARK *const benchmark = Benchmark_Start();
     m_LevelInfo.anim_change_count = VFile_ReadS32(file);
     LOG_INFO("%d anim changes", m_LevelInfo.anim_change_count);
-    Anim_InitialiseChanges(
-        m_LevelInfo.anim_change_count + m_InjectionInfo->anim_change_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIM_CHANGES);
+    Anim_InitialiseChanges(m_LevelInfo.anim_change_count + inj_count);
     Level_ReadAnimChanges(0, m_LevelInfo.anim_change_count, file);
     Benchmark_End(benchmark, NULL);
 }
@@ -439,8 +439,8 @@ static void M_LoadAnimRanges(VFILE *file)
     BENCHMARK *const benchmark = Benchmark_Start();
     m_LevelInfo.anim_range_count = VFile_ReadS32(file);
     LOG_INFO("%d anim ranges", m_LevelInfo.anim_range_count);
-    Anim_InitialiseRanges(
-        m_LevelInfo.anim_range_count + m_InjectionInfo->anim_range_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIM_RANGES);
+    Anim_InitialiseRanges(m_LevelInfo.anim_range_count + inj_count);
     Level_ReadAnimRanges(0, m_LevelInfo.anim_range_count, file);
     Benchmark_End(benchmark, NULL);
 }
@@ -450,8 +450,8 @@ static void M_LoadAnimCommands(VFILE *file)
     BENCHMARK *const benchmark = Benchmark_Start();
     m_LevelInfo.anim_command_count = VFile_ReadS32(file);
     LOG_INFO("%d anim commands", m_LevelInfo.anim_command_count);
-    Level_InitialiseAnimCommands(
-        m_LevelInfo.anim_command_count + m_InjectionInfo->anim_cmd_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIM_COMMANDS);
+    Level_InitialiseAnimCommands(m_LevelInfo.anim_command_count + inj_count);
     Level_ReadAnimCommands(0, m_LevelInfo.anim_command_count, file);
     Benchmark_End(benchmark, NULL);
 }
@@ -461,8 +461,8 @@ static void M_LoadAnimBones(VFILE *const file)
     BENCHMARK *const benchmark = Benchmark_Start();
     m_LevelInfo.anim_bone_count = VFile_ReadS32(file) / ANIM_BONE_SIZE;
     LOG_INFO("%d anim bones", m_LevelInfo.anim_bone_count);
-    Anim_InitialiseBones(
-        m_LevelInfo.anim_bone_count + m_InjectionInfo->anim_bone_count);
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIM_BONES);
+    Anim_InitialiseBones(m_LevelInfo.anim_bone_count + inj_count);
     Level_ReadAnimBones(0, m_LevelInfo.anim_bone_count, file);
     Benchmark_End(benchmark, NULL);
 }
@@ -473,9 +473,9 @@ static void M_LoadAnimFrames(VFILE *file)
     const int32_t raw_data_count = VFile_ReadS32(file);
     m_LevelInfo.anim_frame_data_count = raw_data_count;
     LOG_INFO("%d raw anim frames", m_LevelInfo.anim_frame_data_count);
-    m_LevelInfo.anim_frame_data = Memory_Alloc(
-        sizeof(int16_t)
-        * (raw_data_count + m_InjectionInfo->anim_frame_data_count));
+    const int32_t inj_count = Inject_GetDataCount(IDT_ANIM_FRAMES);
+    m_LevelInfo.anim_frame_data =
+        Memory_Alloc(sizeof(int16_t) * (raw_data_count + inj_count));
     VFile_Read(
         file, m_LevelInfo.anim_frame_data, sizeof(int16_t) * raw_data_count);
     Benchmark_End(benchmark, NULL);
@@ -767,9 +767,9 @@ static void M_LoadSamples(VFILE *file)
         Shell_ExitSystem("No Sample Infos");
     }
 
+    int32_t inj_count = Inject_GetDataCount(IDT_SAMPLE_INFOS);
     g_SampleInfos = GameBuf_Alloc(
-        sizeof(SAMPLE_INFO)
-            * (m_LevelInfo.sample_info_count + m_InjectionInfo->sfx_count),
+        sizeof(SAMPLE_INFO) * (m_LevelInfo.sample_info_count + inj_count),
         GBUF_SAMPLE_INFOS);
     for (int32_t i = 0; i < m_LevelInfo.sample_info_count; i++) {
         SAMPLE_INFO *sample_info = &g_SampleInfos[i];
@@ -785,9 +785,9 @@ static void M_LoadSamples(VFILE *file)
         Shell_ExitSystem("No Sample Data");
     }
 
-    m_LevelInfo.sample_data = GameBuf_Alloc(
-        m_LevelInfo.sample_data_size + m_InjectionInfo->sfx_data_size,
-        GBUF_SAMPLES);
+    inj_count = Inject_GetDataCount(IDT_SAMPLE_DATA);
+    m_LevelInfo.sample_data =
+        GameBuf_Alloc(m_LevelInfo.sample_data_size + inj_count, GBUF_SAMPLES);
     VFile_Read(
         file, m_LevelInfo.sample_data,
         sizeof(char) * m_LevelInfo.sample_data_size);
@@ -798,9 +798,9 @@ static void M_LoadSamples(VFILE *file)
         Shell_ExitSystem("No Samples");
     }
 
-    m_LevelInfo.sample_offsets = Memory_Alloc(
-        sizeof(int32_t)
-        * (m_LevelInfo.sample_count + m_InjectionInfo->sample_count));
+    inj_count = Inject_GetDataCount(IDT_SAMPLE_INDICES);
+    m_LevelInfo.sample_offsets =
+        Memory_Alloc(sizeof(int32_t) * (m_LevelInfo.sample_count + inj_count));
     VFile_Read(
         file, m_LevelInfo.sample_offsets,
         sizeof(int32_t) * m_LevelInfo.sample_count);
@@ -841,7 +841,7 @@ static void M_CompleteSetup(const GAME_FLOW_LEVEL *const level)
     // killing mutants. This is to maintain that feature.
     Mutant_ToggleExplosions(g_Objects[O_EXPLOSION_1].loaded);
 
-    Inject_AllInjections(&m_LevelInfo);
+    Inject_AllInjections();
 
     const int32_t frame_count =
         Anim_GetTotalFrameCount(m_LevelInfo.anim_frame_data_count);
@@ -981,11 +981,8 @@ void Level_Load(const GAME_FLOW_LEVEL *const level)
     Memory_FreePointer(&m_LevelInfo.texture_rgb_page_ptrs);
     Memory_FreePointer(&m_LevelInfo.sample_offsets);
     Memory_FreePointer(&m_LevelInfo.palette);
-    Memory_FreePointer(&m_InjectionInfo);
 
-    m_InjectionInfo = Memory_Alloc(sizeof(INJECTION_INFO));
-    Inject_Init(
-        level->injections.count, level->injections.data_paths, m_InjectionInfo);
+    Inject_InitLevel(level);
 
     M_LoadFromFile(level);
     M_CompleteSetup(level);

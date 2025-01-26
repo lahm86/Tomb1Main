@@ -21,17 +21,6 @@ typedef struct {
 } INJECTION_SET;
 
 typedef struct {
-    bool (*is_relevant)(const INJECTION *injection);
-    bool (*handle_set)(const INJECTION_SET *set);
-} INJECTION_INTERFACE;
-
-typedef struct {
-    int32_t num_files;
-    char **files;
-    INJECTION_INTERFACE interface;
-} INJECTION_ARGS;
-
-typedef struct {
     int16_t room_index;
     int16_t num_vertices;
     int16_t num_quads;

@@ -1,10 +1,35 @@
 #pragma once
 
+#include "../../virtual_file.h"
 #include "../math.h"
 #include "../objects/ids.h"
 #include "./enum.h"
 
 #include <stdint.h>
+
+typedef struct {
+    VFILE *fp;
+    INJECTION_VERSION version;
+    INJECTION_MAIN_TYPE type;
+    bool relevant;
+} INJECTION;
+
+typedef struct {
+    INJECTION *injection;
+    INJECTION_SET_TYPE type;
+    int32_t num_blocks;
+} INJECTION_SET;
+
+typedef struct {
+    bool (*is_relevant)(const INJECTION *injection);
+    bool (*handle_set)(const INJECTION_SET *set);
+} INJECTION_INTERFACE;
+
+typedef struct {
+    int32_t num_files;
+    char **files;
+    INJECTION_INTERFACE interface;
+} INJECTION_ARGS;
 
 typedef struct {
     int16_t room_index;

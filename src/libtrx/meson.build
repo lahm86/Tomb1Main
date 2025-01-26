@@ -117,6 +117,7 @@ sources = [
   'game/game_string_table/priv.c',
   'game/game_string_table/reader.c',
   'game/gun/common.c',
+  'game/inject/common.c',
   'game/input/backends/controller.c',
   'game/input/backends/internal.c',
   'game/input/backends/keyboard.c',

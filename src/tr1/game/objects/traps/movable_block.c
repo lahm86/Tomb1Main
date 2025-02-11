@@ -33,6 +33,7 @@ static const OBJECT_BOUNDS m_MovableBlock_Bounds = {
     },
 };
 
+static ITEM *m_LastMovedBlock = NULL;
 static const OBJECT_BOUNDS *M_Bounds(void);
 static bool M_TestDoor(ITEM *lara_item, COLL_INFO *coll);
 static bool M_TestDestination(ITEM *item, int32_t block_height);
@@ -274,8 +275,8 @@ void MovableBlock_Control(int16_t item_num)
     if (item->status == IS_DEACTIVATED) {
         item->status = IS_INACTIVE;
         Item_RemoveActive(item_num);
-        Room_AlterFloorHeight(item, -WALL_L);
         Room_TestTriggers(item);
+        m_LastMovedBlock = item;
     }
 }
 
@@ -283,6 +284,13 @@ void MovableBlock_Collision(int16_t item_num, ITEM *lara_item, COLL_INFO *coll)
 {
     ITEM *item = &g_Items[item_num];
     const OBJECT *const obj = &g_Objects[item->object_id];
+
+    if (m_LastMovedBlock != NULL
+        && lara_item->current_anim_state != LS_PUSH_BLOCK
+        && lara_item->current_anim_state != LS_PULL_BLOCK) {
+        Room_AlterFloorHeight(m_LastMovedBlock, -WALL_L);
+        m_LastMovedBlock = NULL;
+    }
 
     if (item->current_anim_state == MOVABLE_BLOCK_STATE_STILL) {
         item->priv = (void *)false;

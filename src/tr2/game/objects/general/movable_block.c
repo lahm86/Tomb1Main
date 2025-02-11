@@ -20,6 +20,8 @@ typedef enum {
     MOVABLE_BLOCK_STATE_PULL = 3,
 } MOVABLE_BLOCK_STATE;
 
+static ITEM *m_LastMovedBlock = NULL;
+
 int32_t __cdecl MovableBlock_TestDestination(
     const ITEM *const item, const int32_t block_height)
 {
@@ -209,8 +211,8 @@ void __cdecl MovableBlock_Control(const int16_t item_num)
     if (item->status == IS_DEACTIVATED) {
         item->status = IS_INACTIVE;
         Item_RemoveActive(item_num);
-        Room_AlterFloorHeight(item, -WALL_L);
         Room_TestTriggers(item);
+        m_LastMovedBlock = item;
     }
 }
 
@@ -218,6 +220,13 @@ void __cdecl MovableBlock_Collision(
     const int16_t item_num, ITEM *const lara_item, COLL_INFO *const coll)
 {
     ITEM *const item = Item_Get(item_num);
+
+    if (m_LastMovedBlock != NULL
+        && lara_item->current_anim_state != LS_PUSH_BLOCK
+        && lara_item->current_anim_state != LS_PULL_BLOCK) {
+        Room_AlterFloorHeight(m_LastMovedBlock, -WALL_L);
+        m_LastMovedBlock = NULL;
+    }
 
     if (!g_Input.action || item->status == IS_ACTIVE || lara_item->gravity
         || lara_item->pos.y != item->pos.y) {

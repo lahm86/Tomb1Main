@@ -8,6 +8,7 @@
 #include "game/lara/misc.h"
 #include "game/math.h"
 #include "game/matrix.h"
+#include "game/objects/common.h"
 #include "game/output.h"
 #include "game/random.h"
 #include "game/room.h"
@@ -384,8 +385,12 @@ void __cdecl Flare_Control(const int16_t item_num)
     const SECTOR *const sector =
         Room_GetSector(item->pos.x, item->pos.y, item->pos.z, &room_num);
 
+    const OBJECT *const object = Object_GetObject(item->object_id);
+    const BOUNDS_16 bounds =
+        Object_GetBoundingBox(object, NULL, item->mesh_bits);
     const int32_t height =
-        Room_GetHeight(sector, item->pos.x, item->pos.y, item->pos.z);
+        Room_GetHeight(sector, item->pos.x, item->pos.y, item->pos.z)
+        - (bounds.max_y - bounds.min_y);
     if (item->pos.y < height) {
         const int32_t ceiling =
             Room_GetCeiling(sector, item->pos.x, item->pos.y, item->pos.z);

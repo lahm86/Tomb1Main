@@ -1,6 +1,7 @@
 ## [Unreleased](https://github.com/LostArtefacts/TRX/compare/tr2-0.7.1...develop) - ××××-××-××
 - completed decompilation efforts – TR2X.dll is gone, Tomb2.exe no longer needed (#1694)
 - added the ability to turn FMVs off (#2110)
+- added the ability for spike walls to be anti-triggered
 - added an option to use PS1 contrast levels, available under F8 (#1646)
 - added an option to use TR3+ side steps (#2111)
 - added an option to allow disabling the developer console (#2063)
@@ -21,6 +22,7 @@
 - fixed flare sound effects not always playing when Lara is in shallow water (#1590)
 - fixed looking forward too far causing an upside down camera frame (#1594)
 - fixed music not playing if triggered while the game is muted, but the volume is then increased (#2170)
+- fixed a softlock in Temple of Xian if the main chamber key is missed (#2042)
 - fixed software renderer not applying underwater tint (#2066, regression from 0.7)
 - fixed some enemies not looking at Lara (#2080, regression from 0.6)
 - fixed the camera getting stuck at the start of Home Sweet Home (#2129, regression from 0.7)

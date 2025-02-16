@@ -96,6 +96,7 @@ static void M_TriggerMusicTrack(int16_t track, const TRIGGER *const trigger)
     }
     // end of g_Lara gym routines
 
+    flags = Music_GetTrackFlags(track);
     if (flags & IF_ONE_SHOT) {
         return;
     }

@@ -1,4 +1,6 @@
-## [Unreleased](https://github.com/LostArtefacts/TRX/compare/tr2-0.9.1...develop) - ××××-××-××
+## [Unreleased](https://github.com/LostArtefacts/TRX/compare/tr2-0.9.2...develop) - ××××-××-××
+
+## [0.9.2](https://github.com/LostArtefacts/TRX/compare/tr2-0.9.1...tr2-0.9.2) - 2025-02-19
 - fixed secret rewards not handed out after loading a save (#2528, regression from 0.8)
 - fixed music not working on certain Linux setups (#2504, regression from 0.2)
 

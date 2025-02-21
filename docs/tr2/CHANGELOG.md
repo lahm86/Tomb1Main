@@ -7,6 +7,7 @@
 - fixed several issues with pushblocks (#2036)
     - fixed an invisible wall above stacked pushblocks if near a ceiling portal
     - fixed floor height issues with pushblocks poised to fall in various scenarios
+    - fixed being unable to stack multiple pushblocks over multiple rooms
 
 ## [0.9.2](https://github.com/LostArtefacts/TRX/compare/tr2-0.9.1...tr2-0.9.2) - 2025-02-19
 - fixed secret rewards not handed out after loading a save (#2528, regression from 0.8)

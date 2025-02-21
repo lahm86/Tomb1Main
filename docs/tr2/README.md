@@ -80,6 +80,7 @@ game with new enhancements and features.
 - fixed smashed windows blocking enemy pathing after loading a save
 - fixed several issues with pushblocks
     - fixed an invisible wall above stacked pushblocks if near a ceiling portal
+    - fixed floor height issues with pushblocks poised to fall in various scenarios
 - improved the animation of Lara's braid
 
 #### Cheats

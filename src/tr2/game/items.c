@@ -346,7 +346,7 @@ int32_t Item_GetFrames(const ITEM *item, ANIM_FRAME *frmptr[], int32_t *rate)
     }
 
     // interpolated
-    if (item != g_LaraItem && !item->active) {
+    if (item != g_LaraItem && (!item->active || item->status != IS_ACTIVE)) {
         *rate = denominator;
         return numerator;
     }
